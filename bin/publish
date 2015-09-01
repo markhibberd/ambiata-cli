@@ -1,0 +1,19 @@
+#!/bin/sh -eux
+
+DIST_BUCKET="$1"
+
+REGION="ap-southeast-2"
+APPLICATION="ambiata"
+EXES="ambiata"
+
+version=$(cat $(dirname $0)/../dist/build/autogen/version.txt)
+tarball="dist/${APPLICATION}-${version}-x86_64-linux.tar.gz"
+
+for e in $EXES
+do
+    aws s3 --region=${REGION} cp dist/build/${e}/${e} s3://${DIST_BUCKET}/${e}/linux/x86_64/${version}/${e}-${version}
+done
+
+$(dirname $0)/bdist $tarball
+
+aws s3 --region=${REGION} cp $tarball s3://${DIST_BUCKET}/${APPLICATION}/linux/x86_64/${version}/${tarball}

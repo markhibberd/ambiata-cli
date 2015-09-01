@@ -1,0 +1,43 @@
+#!/bin/sh -eu
+
+OUTFILE="$1"
+
+APPLICATION="ambiata"
+EXES="ambiata"
+
+tmpdir=$(mktemp -d /tmp/tatooine-cli-distXXXXXX)
+
+trap "rm -r ${tmpdir}" EXIT SIGHUP SIGINT SIGQUIT SIGTERM
+
+distdir="${tmpdir}/${APPLICATION}/"
+bindir="${distdir}/bin"
+docdir="${distdir}/share/doc"
+pdfdir="${docdir}/pdf"
+markdowndir="${docdir}/markdown"
+
+install -m 755 -d $bindir
+install -m 755 -d $pdfdir
+install -m 755 -d $markdowndir
+
+for e in $EXES
+do
+    install -m 755 dist/build/${e}/${e} -t $bindir
+done
+
+install -m 644 LICENSE -t $distdir
+install -m 644 NOTICE.txt -t $distdir
+install -m 644 doc/README -t $distdir
+
+find doc \
+     -maxdepth 1 \
+     -name \*.pdf \
+     -type f \
+     -exec install -m 644 {} -t $pdfdir \;
+
+find doc \
+     -maxdepth 1 \
+     -name \*.md \
+     -type f \
+     -exec install -m 644 {} -t $markdowndir \;
+
+tar -C $tmpdir -c $APPLICATION | gzip > $OUTFILE

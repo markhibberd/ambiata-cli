@@ -1,0 +1,18 @@
+#!/bin/sh -exu
+
+export LC_COLLATE=en_US.UTF-8
+export LANG=en_US.UTF-8
+
+export STATIC_GMP=/usr/lib64/libgmp.a
+export CABAL_CONFIG_ARGS="-fstaticgmp"
+export PATH=$(dirname $0):$PATH
+
+git submodule init
+git submodule sync
+git submodule update
+
+./cabal update
+./cabal build
+./cabal test --log=/dev/stdout
+
+cd doc && make ; cd ..

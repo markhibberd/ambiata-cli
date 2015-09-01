@@ -1,0 +1,171 @@
+name:                  ambiata-tatooine-cli
+version:               0.0.1
+license:               Apache-2.0
+license-file:          LICENSE
+author:                Ambiata <info@ambiata.com>
+maintainer:            Ambiata <info@ambiata.com>
+copyright:             (c) 2015 Ambiata.
+synopsis:              Injest data into s3 via STS
+category:              Daemon
+cabal-version:         >= 1.8
+build-type:            Custom
+description:           Client for tatooine to sync data from on-prem to ambiata.
+
+flag staticgmp
+  description:         Statically link libgmp.
+  default:             False
+
+library
+  build-depends:
+                       base                            >= 3          && < 5
+                     , aeson                           == 0.8.*
+                     , amazonka                        == 99.*
+                     , amazonka-core                   == 99.*
+                     , amazonka-sts                    == 99.*
+                     , ambiata-mismi-core
+                     , ambiata-mismi-s3
+                     , ambiata-p
+                     , ambiata-snooze
+                     , ambiata-twine
+                     , ambiata-x-either
+                     , ambiata-x-optparse
+                     , base64-bytestring               == 1.0.*
+                     , bytestring                      == 0.10.*
+                     , cryptohash                      == 0.11.*
+                     , directory                       == 1.2.*
+                     , either                          == 4.3.*
+                     , envparse                        == 0.2.1
+                     , filelock                        == 0.1.*
+                     , filepath                        == 1.3.*
+                     , hslogger                        == 1.2.*
+                     , http-client                     == 0.4.18.*
+                     , http-client-tls                 == 0.2.*
+                     , http-types                      == 0.8.*
+                     , lens                            >= 4.8       && <= 4.10
+                     , network-uri                     == 2.6.*
+                     , old-locale                      == 1.0.*
+                     , text                            == 1.2.1.*
+                     , time                            == 1.4.*
+                     , transformers                    >= 0.3        && < 0.5
+                     , unix                            == 2.7.*
+
+
+
+
+  ghc-options:
+                       -Wall
+
+  hs-source-dirs:
+                       src
+
+  exposed-modules:
+                       TatooineCli
+                       TatooineCli.Data
+                       TatooineCli.Incoming
+                       TatooineCli.Json
+                       TatooineCli.Files
+                       TatooineCli.Processing
+                       TatooineCli.Env
+                       TatooineCli.Credentials
+                       TatooineCli.Downloads
+
+executable ambiata
+  if flag(staticgmp)
+    ghc-options:       -Wall -threaded -O2 -pgml gcc-with-gmp.sh
+  else
+    ghc-options:       -Wall -threaded -O2
+
+  main-is:           main/ambiata.hs
+  build-depends:     base                             >= 3          && < 5
+                   , hslogger
+                   , ambiata-p
+                   , ambiata-tatooine-cli
+                   , optparse-applicative
+
+test-suite test
+  type:                exitcode-stdio-1.0
+
+  main-is:             test.hs
+
+  ghc-options:         -Wall -threaded -O2
+
+  hs-source-dirs:
+                      test
+
+  build-depends:
+                      base                            >= 3          && < 5
+                    , QuickCheck                      == 2.7.*
+                    , directory
+                    , ambiata-disorder-aeson
+                    , ambiata-disorder-core
+                    , ambiata-disorder-corpus
+                    , ambiata-mismi-core-test
+                    , ambiata-mismi-s3-test
+                    , ambiata-p
+                    , ambiata-tatooine-cli
+                    , filepath
+                    , quickcheck-instances            == 0.3.*
+                    , text                            == 1.2.1.*
+                    , time
+
+
+test-suite test-io
+  type:               exitcode-stdio-1.0
+
+  main-is:            test-io.hs
+
+  ghc-options:        -Wall -threaded -O2
+
+  hs-source-dirs:
+                      test
+
+  build-depends:
+                      base                            >= 3          && < 5
+                    , QuickCheck                      == 2.7.*
+                    , aeson
+                    , ambiata-disorder-core
+                    , ambiata-disorder-corpus
+                    , ambiata-mismi-core
+                    , ambiata-mismi-core-test
+                    , ambiata-mismi-s3
+                    , ambiata-mismi-s3-test
+                    , ambiata-p
+                    , ambiata-snooze
+                    , ambiata-snooze-test
+                    , ambiata-tatooine-cli
+                    , ambiata-twine
+                    , bytestring
+                    , directory
+                    , either
+                    , filepath
+                    , quickcheck-instances            == 0.3.*
+                    , scotty
+                    , temporary
+                    , text                            == 1.2.1.*
+                    , time
+                    , transformers
+                    , unix
+                    , http-client                     == 0.4.18.*
+
+test-suite test-cli
+  type:               exitcode-stdio-1.0
+
+  main-is:            test-cli.hs
+
+  ghc-options:        -Wall -threaded -O2
+
+  hs-source-dirs:
+                      test
+
+  build-depends:
+                      base                            >= 3          && < 5
+                    , ambiata-disorder-core
+                    , ambiata-p
+
+test-suite test-smoke
+  type:               exitcode-stdio-1.0
+  hs-source-dirs:     test
+  main-is:            test-smoke.hs
+  build-depends:      base                            >= 3 && < 5
+                    , directory
+                    , process

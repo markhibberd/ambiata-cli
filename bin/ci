@@ -1,0 +1,5 @@
+#!/bin/sh -exu
+
+$(dirname $0)/ci.smoketests
+$(dirname $0)/publish-docs
+$(dirname $0)/publish "ambiata-download"

@@ -1,0 +1,27 @@
+# This is an example unitfile for systemd. It can be used on
+# systemd-based Linux distributions like Debian jessie or Centos 7 by
+# updating the configuration variables, copying it to
+# `/etc/systemd/system` and running `systemctl enable ambiata-upload
+# && systemctl start ambiata-upload`.
+
+[Unit]
+Description=Ambiata Upload
+After=network.target
+
+[Service]
+Type=simple
+Restart=on-failure
+ExecStart=/opt/ambiata/bin/ambiata upload
+
+# Replace these values with the relevant ones for your organisation.
+Environment="AMBIATA_API_KEY=6a7c5f66-d2d3-4b86-96ed-1770c1abb942"
+Environment="UPLOAD_DIR=/home/upload/data/"
+
+# Use an HTTP proxy which requires authentication.
+Environment="https_proxy=http://username:password@proxy.localdomain:3128"
+
+# Run as the 'upload' user rather than root.
+User=upload
+
+[Install]
+WantedBy=multi-user.target

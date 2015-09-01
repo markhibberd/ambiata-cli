@@ -1,0 +1,32 @@
+#! /bin/sh -exu
+
+VEE_URI="s3://ambiata-dist/vee/linux/x86_64/1.0.1-20150816224346-ebc9b89/vee-1.0.1-20150816224346-ebc9b89"
+
+get_elf () {
+    name=$1
+    uri=$2
+
+    latest=test-helpers/$(basename $uri)
+    mkdir -p test-helpers
+    if [[ ! -f ${latest} ]]
+    then
+        aws s3 --region=ap-southeast-2 cp \
+            $uri \
+            ./${latest}
+        chmod +x ./${latest}
+    fi
+    ln -sf ./$(basename $latest) ./test-helpers/${name}
+}
+
+get_latest () {
+   name="$1"
+   uri=$(./test-helpers/vee $name)
+   get_elf $name $uri
+}
+
+get_elf vee $VEE_URI
+
+get_latest tatooine
+get_latest mountebank-tatooine
+
+SMOKETESTS=1 $(dirname $0)/ci.common
