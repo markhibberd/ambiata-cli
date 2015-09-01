@@ -12,7 +12,7 @@ Ambiata via an upload to Amazon S3.
 
 Outbound access via TCP port 443 (HTTPS) to [Amazon S3 and Amazon
 EC2](https://docs.aws.amazon.com/general/latest/gr/aws-ip-ranges.html)
-in the `ap-southeast-2 region` is required. Inbound access is not required.
+in the `ap-southeast-2` region is required. Inbound access is not required.
 
 ## Server
 
