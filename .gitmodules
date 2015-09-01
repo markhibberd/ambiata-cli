@@ -1,0 +1,24 @@
+[submodule "lib/amazonka"]
+	path = lib/amazonka
+	url = git@github.com:ambiata/amazonka
+[submodule "lib/delorean"]
+	path = lib/delorean
+	url = git@github.com:ambiata/delorean
+[submodule "lib/disorder"]
+	path = lib/disorder
+	url = git@github.com:ambiata/disorder.hs
+[submodule "lib/mismi"]
+	path = lib/mismi
+	url = git@github.com:ambiata/mismi
+[submodule "lib/p"]
+	path = lib/p
+	url = git@github.com:ambiata/p
+[submodule "lib/snooze"]
+	path = lib/snooze
+	url = git@github.com:ambiata/snooze
+[submodule "lib/twine"]
+	path = lib/twine
+	url = git@github.com:ambiata/twine
+[submodule "lib/x"]
+	path = lib/x
+	url = git@github.com:ambiata/x
