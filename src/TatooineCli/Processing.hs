@@ -41,7 +41,7 @@ import           X.Control.Monad.Trans.Either
 --
 uploadReady :: IncomingDir -> Region -> UploadAccess -> EitherT TatooineClientError IO [ArchivedFile]
 uploadReady dir r (UploadAccess (TemporaryAccess (TemporaryCreds k s sess) a)) =
-  firstEitherT TatooineAWSError $ runAWSWithCreds r k s (Just $ sess) Nothing $ processReady dir a
+  firstEitherT TatooineAWSError $ runAWSWithCreds r k s (Just $ sess) $ processReady dir a
 
 
 processReady :: IncomingDir -> Address -> AWS [ArchivedFile]
