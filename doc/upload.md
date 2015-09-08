@@ -34,7 +34,8 @@ The `ambiata upload` command is configured using environment
 variables; these can be set either by the process supervisor or via a
 "run script" which configures and runs the command. Example
 configuration files for some process managers and a sample "run
-script" are available [here](https://github.com/ambiata/tatooine-cli/tree/master/doc/examples).
+script" are available in the release tarball under the
+`share/doc/examples` directory.
 
 If you use any of the configuration examples, you will need to update
 the environment variables to replace the example values with real ones
