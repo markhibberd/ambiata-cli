@@ -12,12 +12,14 @@ trap "rm -r ${tmpdir}" EXIT SIGHUP SIGINT SIGQUIT SIGTERM
 distdir="${tmpdir}/${APPLICATION}/"
 bindir="${distdir}/bin"
 docdir="${distdir}/share/doc"
+exampledir="${docdir}/examples"
 pdfdir="${docdir}/pdf"
 markdowndir="${docdir}/markdown"
 
 install -m 755 -d $bindir
 install -m 755 -d $pdfdir
 install -m 755 -d $markdowndir
+install -m 755 -d $exampledir
 
 for e in $EXES
 do
@@ -39,5 +41,10 @@ find doc \
      -name \*.md \
      -type f \
      -exec install -m 644 {} -t $markdowndir \;
+
+find doc/examples \
+     -maxdepth 1 \
+     -type f \
+     -exec install -m 644 {} -t $exampledir \;
 
 tar -C $tmpdir -c $APPLICATION | gzip > $OUTFILE
