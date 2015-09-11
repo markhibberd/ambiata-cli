@@ -93,22 +93,20 @@ doDownload (DownloadEnv dir c) = do
 
 doUpload :: UploadEnv -> EitherT TatooineClientError IO UploadResult
 doUpload (UploadEnv dir retention c) = do
+  -- Connect to the API before doing anything else, so we fail fast in
+  -- the case of a configuration error.
+  creds <- bimapEitherT TatooineCredentialLoadError id $ obtainCredentialsForUpload (apiKey c) (apiEndpoint c)
   prepareDir dir
   now   <- liftIO $ getCurrentTime
   (incoming, processing, bads)  <- processDir dir (NoChangeAfter $ twoMinutesBefore now)
   liftIO $ mapM_ warnBadFile bads
-  uploaded <- upload' processing
+  uploaded <- fmap concat $ mapM (const $ uploadReady dir Sydney creds) processing
 
   liftIO $ debugM logCtx "Cleaning up archived files..."
   cleaned <- cleanUpArchived dir retention now
   liftIO . infoM logCtx $ "Cleaned up archived files: " <> (renderArchived cleaned)
   pure $ UploadResult incoming processing uploaded
   where
-    upload' [] = pure []
-    upload' _  = do
-      creds <- bimapEitherT TatooineCredentialLoadError id $ obtainCredentialsForUpload (apiKey c) (apiEndpoint c)
-      uploadReady dir Sydney creds
-
     warnBadFile st = warningM logCtx . T.unpack . T.concat $
           [ "Not processing "
           , renderBadFileState st
