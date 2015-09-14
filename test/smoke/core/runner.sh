@@ -50,12 +50,12 @@ setup_endtoend () {
     echo -n $mb_pid > $MOUNTEBANK_PIDFILE
     mb_port=$(bound_to $mb_pid)
     echo -n $mb_port > $MOUNTEBANK_PORTFILE
+    tatooine_port=$RANDOM
 
     # Run tatooine server
-    eval "( TATOOINE_PORT=0 TATOOINE_UPLOAD_BUCKET=$RANDOM TATOOINE_DOWNLOAD_BUCKET=$RANDOM ${TATOOINE} ) &"
+    eval "( TATOOINE_PORT=${tatooine_port} TATOOINE_UPLOAD_BUCKET=$RANDOM TATOOINE_DOWNLOAD_BUCKET=$RANDOM ${TATOOINE} ) &"
     tatooine_pid=$!
     sleep 1
-    tatooine_port=$(bound_to $tatooine_pid)
     echo -n $tatooine_pid > $TATOOINE_PIDFILE
     echo -n $tatooine_port > $TATOOINE_PORTFILE
 }
