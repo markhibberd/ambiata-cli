@@ -1,4 +1,4 @@
-name:                  ambiata-tatooine-cli
+name:                  ambiata-cli
 version:               0.0.1
 license:               Apache-2.0
 license-file:          LICENSE
@@ -9,7 +9,7 @@ synopsis:              Injest data into s3 via STS
 category:              Daemon
 cabal-version:         >= 1.8
 build-type:            Custom
-description:           Client for tatooine to sync data from on-prem to ambiata.
+description:           Client for interacting with the Ambiata API
 
 flag staticgmp
   description:         Statically link libgmp.
@@ -59,15 +59,15 @@ library
                        src
 
   exposed-modules:
-                       TatooineCli
-                       TatooineCli.Data
-                       TatooineCli.Incoming
-                       TatooineCli.Json
-                       TatooineCli.Files
-                       TatooineCli.Processing
-                       TatooineCli.Env
-                       TatooineCli.Credentials
-                       TatooineCli.Downloads
+                       Ambiata.Cli
+                       Ambiata.Cli.Data
+                       Ambiata.Cli.Incoming
+                       Ambiata.Cli.Json
+                       Ambiata.Cli.Files
+                       Ambiata.Cli.Processing
+                       Ambiata.Cli.Env
+                       Ambiata.Cli.Credentials
+                       Ambiata.Cli.Downloads
 
 executable ambiata
   if flag(staticgmp)
@@ -79,7 +79,7 @@ executable ambiata
   build-depends:     base                             >= 3          && < 5
                    , hslogger
                    , ambiata-p
-                   , ambiata-tatooine-cli
+                   , ambiata-cli
                    , optparse-applicative
 
 test-suite test
@@ -96,13 +96,13 @@ test-suite test
                       base                            >= 3          && < 5
                     , QuickCheck                      == 2.7.*
                     , directory
+                    , ambiata-cli
                     , ambiata-disorder-aeson
                     , ambiata-disorder-core
                     , ambiata-disorder-corpus
                     , ambiata-mismi-core-test
                     , ambiata-mismi-s3-test
                     , ambiata-p
-                    , ambiata-tatooine-cli
                     , filepath
                     , quickcheck-instances            == 0.3.*
                     , text                            == 1.2.1.*
@@ -123,6 +123,7 @@ test-suite test-io
                       base                            >= 3          && < 5
                     , QuickCheck                      == 2.7.*
                     , aeson
+                    , ambiata-cli
                     , ambiata-disorder-core
                     , ambiata-disorder-corpus
                     , ambiata-mismi-core
@@ -132,7 +133,6 @@ test-suite test-io
                     , ambiata-p
                     , ambiata-snooze
                     , ambiata-snooze-test
-                    , ambiata-tatooine-cli
                     , ambiata-twine
                     , bytestring
                     , directory
@@ -161,11 +161,3 @@ test-suite test-cli
                       base                            >= 3          && < 5
                     , ambiata-disorder-core
                     , ambiata-p
-
-test-suite test-smoke
-  type:               exitcode-stdio-1.0
-  hs-source-dirs:     test
-  main-is:            test-smoke.hs
-  build-depends:      base                            >= 3 && < 5
-                    , directory
-                    , process

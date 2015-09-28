@@ -1,16 +1,16 @@
 import           Disorder.Core.Main
 
 
-import qualified Test.IO.TatooineCli.Credentials
-import qualified Test.IO.TatooineCli.Downloads
-import qualified Test.IO.TatooineCli.Incoming
-import qualified Test.IO.TatooineCli.Processing
+import qualified Test.IO.Ambiata.Cli.Credentials
+import qualified Test.IO.Ambiata.Cli.Downloads
+import qualified Test.IO.Ambiata.Cli.Incoming
+import qualified Test.IO.Ambiata.Cli.Processing
 
 main :: IO ()
 main =
   disorderMain [
-    Test.IO.TatooineCli.Credentials.tests,
-    Test.IO.TatooineCli.Incoming.tests,
-    Test.IO.TatooineCli.Processing.tests,
-    Test.IO.TatooineCli.Downloads.tests
+    Test.IO.Ambiata.Cli.Credentials.tests,
+    Test.IO.Ambiata.Cli.Incoming.tests,
+    Test.IO.Ambiata.Cli.Processing.tests,
+    Test.IO.Ambiata.Cli.Downloads.tests
     ]

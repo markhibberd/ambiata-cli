@@ -6,7 +6,7 @@
 -- This deals with files that are ready to ingest.
 --
 
-module TatooineCli.Processing (
+module Ambiata.Cli.Processing (
     availableFiles,
     moveToArchive,
     uploadAction,
@@ -14,6 +14,9 @@ module TatooineCli.Processing (
     fileAddress,
     uploadReady
 ) where
+
+import           Ambiata.Cli.Data
+import           Ambiata.Cli.Json
 
 import           P
 
@@ -26,9 +29,6 @@ import           Control.Monad.Trans.Either
 
 import qualified Data.Text                    as T
 
-import           TatooineCli.Data
-import           TatooineCli.Json
-
 import           Mismi.Control.Amazonka
 import           Mismi.S3.Commands
 import           Mismi.S3.Data
@@ -39,9 +39,9 @@ import           X.Control.Monad.Trans.Either
 -- |
 -- Upload the files that are in the processing dir, and move to archive when done.
 --
-uploadReady :: IncomingDir -> Region -> UploadAccess -> EitherT TatooineClientError IO [ArchivedFile]
+uploadReady :: IncomingDir -> Region -> UploadAccess -> EitherT AmbiataError IO [ArchivedFile]
 uploadReady dir r (UploadAccess (TemporaryAccess (TemporaryCreds k s sess) a)) =
-  firstEitherT TatooineAWSError $ runAWSWithCreds r k s (Just $ sess) $ processReady dir a
+  firstEitherT AmbiataAWSError $ runAWSWithCreds r k s (Just $ sess) $ processReady dir a
 
 
 processReady :: IncomingDir -> Address -> AWS [ArchivedFile]

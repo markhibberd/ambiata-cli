@@ -6,19 +6,19 @@
 -- This deals with files that are ready to ingest.
 --
 
-module TatooineCli.Credentials (
+module Ambiata.Cli.Credentials (
     obtainCredentialsForUpload
   , obtainCredentialsForDownload
   , renderCredentialError
   , combinePathSafe
 ) where
 
+import           Ambiata.Cli.Data
+import           Ambiata.Cli.Json
+
 import           P
 
 import           System.IO
-
-import           TatooineCli.Data
-import           TatooineCli.Json
 
 import qualified Data.ByteString.Char8      as BS8
 import           Data.Text

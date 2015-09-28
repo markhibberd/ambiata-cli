@@ -1,6 +1,6 @@
 #!/bin/sh -exu
 
-PROJECT="tatooine-cli"
+PROJECT="ambiata-cli"
 doc_version=$(date '+%Y%m%d%H%M%S')-$(git log --pretty=format:%h -n 1)
 
 # Ensure the build is up to date.

@@ -1,12 +1,12 @@
-tatooine-cli
-============
+Ambiata Command Line
+====================
 
 
 High level data flows
 ---------------------
 High level view of how data moves in/out between a client and Ambiata.
 
-![Data flow](images/tatooine-data-flow.png)
+![Data flow](images/data-flow.png)
 
 
 ## Upload flow from a customers filesystem
@@ -37,4 +37,4 @@ The /dropbox directory is scanned, where files are compared with a previous hash
 
 The `.processing` directory is scanned, and for each file a multipart upload started, and on completion the file is moved to archive (there is a chance to fork/join multiple multipart uploads here if needed).
 
-The daemon will obtain a fresh token from tatooine server every 24 hours for a given "feed" (this can be cached). This includes the path of where the file is transferred to.
+The daemon will obtain a fresh token from Ambiata every 24 hours for a given "feed" (this can be cached). This includes the path of where the file is transferred to.

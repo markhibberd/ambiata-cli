@@ -2,13 +2,13 @@
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-module Test.TatooineCli.Arbitrary where
+module Test.Ambiata.Cli.Arbitrary where
+
+import           Ambiata.Cli.Data
+import           Ambiata.Cli.Json
 
 import           Data.Time.Clock
 import           Data.Time.Clock.POSIX
-
-import           TatooineCli.Data
-import           TatooineCli.Json
 
 
 import           Test.QuickCheck

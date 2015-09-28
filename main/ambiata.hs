@@ -1,6 +1,7 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE LambdaCase        #-}
-
+import           Ambiata.Cli           (uploadCommand)
+import           Ambiata.Cli.Env       (uploadEnv)
 
 import           Options.Applicative
 
@@ -11,8 +12,6 @@ import           System.Log.Logger
 import           System.Log.Handler    (setFormatter)
 import           System.Log.Handler.Simple
 import           System.Log.Formatter
-import           TatooineCli           (uploadCommand)
-import           TatooineCli.Env       (uploadEnv)
 
 data Command = Upload
   deriving (Eq, Show)

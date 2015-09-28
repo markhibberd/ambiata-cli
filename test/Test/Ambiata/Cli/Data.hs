@@ -1,9 +1,9 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
-module Test.TatooineCli.Data where
+module Test.Ambiata.Cli.Data where
 
-import           TatooineCli.Data
+import           Ambiata.Cli.Data
 
 import           P                          hiding (isPrefixOf)
 
@@ -11,8 +11,8 @@ import           System.IO
 
 import           Data.Text
 
+import           Test.Ambiata.Cli.Arbitrary ()
 import           Test.QuickCheck
-import           Test.TatooineCli.Arbitrary ()
 
 prop_filepath :: IncomingDir -> IncomingFile -> Bool
 prop_filepath d f =

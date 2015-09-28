@@ -1,8 +1,12 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
-module Test.IO.TatooineCli.Processing where
+module Test.IO.Ambiata.Cli.Processing where
 
+import           Ambiata.Cli.Data
+import           Ambiata.Cli.Incoming
+import           Ambiata.Cli.Json
+import           Ambiata.Cli.Processing
 
 import           P
 
@@ -22,24 +26,19 @@ import           Data.Text                  (Text, unpack)
 
 import           Disorder.Core.IO
 
-import           TatooineCli.Data
-import           TatooineCli.Incoming
-import           TatooineCli.Json
-import           TatooineCli.Processing
-
 import           Mismi.Control.Amazonka
 import           Mismi.S3.Default
 import           Mismi.S3.Data              (Address (..))
 
-import           Test.IO.TatooineCli.Util
-import           Test.TatooineCli.Arbitrary ()
+import           Test.Ambiata.Cli.Arbitrary ()
+import           Test.IO.Ambiata.Cli.Util
 
 import           Test.Mismi.Amazonka
 import           Test.Mismi.S3
 
 
 prop_available_files :: String -> [ProcessingFile] -> Property
-prop_available_files junk files' = testIO . withSystemTempDirectory "prop_available_files" $ \dir' -> testTatooine $ do
+prop_available_files junk files' = testIO . withSystemTempDirectory "prop_available_files" $ \dir' -> testAmbiata $ do
   let files = nub files'
   let dir = IncomingDir dir'
   let working = toWorkingPath dir Processing
@@ -50,7 +49,7 @@ prop_available_files junk files' = testIO . withSystemTempDirectory "prop_availa
   pure $ (ls, length ls', sort ls') === ([], length files, sort (files))
 
 prop_move_to_archive :: String -> ProcessingFile -> Property
-prop_move_to_archive junk f@(ProcessingFile name) = testIO . withSystemTempDirectory "prop_move_to_archive" $ \dir' -> testTatooine $ do
+prop_move_to_archive junk f@(ProcessingFile name) = testIO . withSystemTempDirectory "prop_move_to_archive" $ \dir' -> testAmbiata $ do
   let dir = IncomingDir dir'
   let working = toWorkingPath dir Processing
   prepareDir dir

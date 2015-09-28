@@ -1,4 +1,4 @@
 #!/bin/sh -exu
 
-$(dirname $0)/ci.smoketests
+$(dirname $0)/ci.common
 $(dirname $0)/publish "ambiata-dist-branches"

@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module TatooineCli.Files (
+module Ambiata.Cli.Files (
     ignoreNoFile
 ) where
 

@@ -1,14 +1,14 @@
 import           Disorder.Core.Main
 
-import qualified Test.TatooineCli.Data
-import qualified Test.TatooineCli.Incoming
-import qualified Test.TatooineCli.Json
+import qualified Test.Ambiata.Cli.Data
+import qualified Test.Ambiata.Cli.Incoming
+import qualified Test.Ambiata.Cli.Json
 
 
 main :: IO ()
 main =
   disorderMain [
-       Test.TatooineCli.Data.tests,
-       Test.TatooineCli.Incoming.tests,
-       Test.TatooineCli.Json.tests
+       Test.Ambiata.Cli.Data.tests,
+       Test.Ambiata.Cli.Incoming.tests,
+       Test.Ambiata.Cli.Json.tests
     ]

@@ -6,13 +6,16 @@
 -- Download/sync files from s3 to client.
 --
 
-module TatooineCli.Downloads (
+module Ambiata.Cli.Downloads (
     serverFiles
   , filesToDownload
   , downloadFiles
   , downloadReady
   , isFileMissing
 ) where
+
+import           Ambiata.Cli.Data
+import           Ambiata.Cli.Json
 
 import           P
 
@@ -24,9 +27,6 @@ import           Control.Monad.IO.Class     (liftIO)
 import           Control.Monad.Trans.Either
 
 import qualified Data.Text                  as T
-
-import           TatooineCli.Data
-import           TatooineCli.Json
 
 import           Mismi.S3.Default
 import           Mismi.S3.Data              hiding ((</>))

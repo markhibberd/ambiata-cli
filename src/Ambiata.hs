@@ -1,12 +1,18 @@
 {-# LANGUAGE NoImplicitPrelude   #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-module TatooineCli (
+module Ambiata (
     uploadCommand
   , downloadCommand
   , doUpload
   , doDownload
 ) where
+
+import           Ambiata.Credentials
+import           Ambiata.Data
+import           Ambiata.Downloads
+import           Ambiata.Incoming
+import           Ambiata.Processing
 
 import           Data.Text                    (Text)
 import qualified Data.Text                    as T
@@ -27,12 +33,6 @@ import           System.FilePath
 import           System.IO
 import           System.Log.Logger
 
-import           TatooineCli.Credentials
-import           TatooineCli.Data
-import           TatooineCli.Downloads
-import           TatooineCli.Incoming
-import           TatooineCli.Processing
-
 import           Twine.Snooze                 (minutes, snooze)
 
 import           X.Control.Monad.Trans.Either
@@ -50,7 +50,7 @@ uploadCommand e@(UploadEnv _ _ c) = runAction verb "upload" mode "ambiata-upload
                                     >>= liftIO . infoM (T.unpack logCtx) . T.unpack . renderUploadResult
        mode                     = runMode c
        verb                     = verbosity c
-       logCtx                   = "TatooineCli.uploadCommand"
+       logCtx                   = "Ambiata.uploadCommand"
 
 downloadCommand :: DownloadEnv -> IO ()
 downloadCommand e@(DownloadEnv _ c) = runAction verb "download" mode "ambiata-download.lock" download'
@@ -58,13 +58,13 @@ downloadCommand e@(DownloadEnv _ c) = runAction verb "download" mode "ambiata-do
                                         >>= liftIO . infoM (T.unpack logCtx) . T.unpack . renderDownloadResult
        mode                         = runMode c
        verb                         = verbosity c
-       logCtx                       = "TatooineCli.downloadCommand"
+       logCtx                       = "Ambiata.downloadCommand"
 
 -- |
 -- We write to the system tmpdir instead of something sane like
 -- /var/run because we want to make it as low-friction as possible,
 -- and we're more likely to have write permissions in /tmp.
-runAction :: Verbosity -> Text -> RunMode -> FilePath -> EitherT TatooineClientError IO a -> IO a
+runAction :: Verbosity -> Text -> RunMode -> FilePath -> EitherT AmbiataError IO a -> IO a
 runAction verb name m lockf act = do
   updateGlobalLogger rootLoggerName (setLevel verbLevel)
   debugM (T.unpack logCtx) $ "Starting " <> (T.unpack name)
@@ -82,20 +82,20 @@ runAction verb name m lockf act = do
           | verb == Verbose = DEBUG
           | otherwise       = INFO
 
-        logCtx = "TatooineCli.runAction"
+        logCtx = "Ambiata.runAction"
 
         act' = orErrorAndDie logCtx renderClientError act
 
-doDownload ::  DownloadEnv -> EitherT TatooineClientError IO DownloadResult
+doDownload ::  DownloadEnv -> EitherT AmbiataError IO DownloadResult
 doDownload (DownloadEnv dir c) = do
-  creds <- bimapEitherT TatooineCredentialLoadError id $ obtainCredentialsForDownload (apiKey c) (apiEndpoint c)
-  bimapEitherT TatooineAWSError id $ downloadReady dir Sydney creds
+  creds <- bimapEitherT AmbiataCredentialLoadError id $ obtainCredentialsForDownload (apiKey c) (apiEndpoint c)
+  bimapEitherT AmbiataAWSError id $ downloadReady dir Sydney creds
 
-doUpload :: UploadEnv -> EitherT TatooineClientError IO UploadResult
+doUpload :: UploadEnv -> EitherT AmbiataError IO UploadResult
 doUpload (UploadEnv dir retention c) = do
   -- Connect to the API before doing anything else, so we fail fast in
   -- the case of a configuration error.
-  creds <- bimapEitherT TatooineCredentialLoadError id $ obtainCredentialsForUpload (apiKey c) (apiEndpoint c)
+  creds <- bimapEitherT AmbiataCredentialLoadError id $ obtainCredentialsForUpload (apiKey c) (apiEndpoint c)
   prepareDir dir
   now   <- liftIO $ getCurrentTime
   (incoming, processing, bads)  <- processDir dir (NoChangeAfter $ twoMinutesBefore now)
@@ -112,7 +112,7 @@ doUpload (UploadEnv dir retention c) = do
           , renderBadFileState st
           ]
 
-    logCtx = "TatooineCli.doUpload"
+    logCtx = "Ambiata.doUpload"
 
     renderArchived = T.unpack . renderFileList . fmap (unArchivedFile)
 

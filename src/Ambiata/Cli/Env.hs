@@ -1,6 +1,6 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
-module TatooineCli.Env (
+module Ambiata.Cli.Env (
     UploadEnv (..)
   , DownloadEnv (..)
   , CommonEnv (..)
@@ -9,6 +9,8 @@ module TatooineCli.Env (
   , downloadEnv
   , downloadEnv'
   ) where
+
+import           Ambiata.Cli.Data
 
 import           Data.Maybe
 import qualified Data.Text           as T
@@ -20,8 +22,6 @@ import           Network.URI         ()
 import           P
 
 import           System.IO
-
-import           TatooineCli.Data
 
 uploadEnv :: IO UploadEnv
 uploadEnv = parse (header "ambiata-upload") uploadEnv'
