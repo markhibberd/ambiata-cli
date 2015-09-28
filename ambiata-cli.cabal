@@ -161,11 +161,3 @@ test-suite test-cli
                       base                            >= 3          && < 5
                     , ambiata-disorder-core
                     , ambiata-p
-
-test-suite test-smoke
-  type:               exitcode-stdio-1.0
-  hs-source-dirs:     test
-  main-is:            test-smoke.hs
-  build-depends:      base                            >= 3 && < 5
-                    , directory
-                    , process
