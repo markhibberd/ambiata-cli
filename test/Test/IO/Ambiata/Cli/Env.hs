@@ -1,8 +1,10 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
-module Test.IO.TatooineCli.Env where
+module Test.IO.Ambiata.Cli.Env where
 
+import           Ambiata.Cli.Data
+import           Ambiata.Cli.Env
 
 import           P
 
@@ -16,13 +18,10 @@ import           Data.Text
 import           Disorder.Core.IO
 import           Disorder.Corpus
 
-import           TatooineCli.Data
-import           TatooineCli.Env
-
 import           Control.Monad.IO.Class         (liftIO)
 
-import           Test.IO.TatooineCli.Processing (expectLeft, runOrFail)
-import           Test.TatooineCli.Arbitrary     ()
+import           Test.Ambiata.Cli.Arbitrary     ()
+import           Test.IO.Ambiata.Cli.Processing     (expectLeft, runOrFail)
 
 import           Control.Monad.Trans.Either
 

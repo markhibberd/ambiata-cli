@@ -1,7 +1,7 @@
 #!/bin/sh -eu
 
 AMBIATA_CLI="${1:-./dist/build/ambiata/ambiata}"
-RUNDIR=$(mktemp  -p /tmp -d "tatooine-cli-XXXXXX")
+RUNDIR=$(mktemp  -p /tmp -d "ambiata-cli-XXXXXX")
 
 for f in $AMBIATA_CLI; do
     type $f > /dev/null 2>&1 || {

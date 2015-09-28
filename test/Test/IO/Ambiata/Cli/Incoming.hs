@@ -2,8 +2,11 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
-module Test.IO.TatooineCli.Incoming where
+module Test.IO.Ambiata.Cli.Incoming where
 
+import           Ambiata.Cli.Data
+import           Ambiata.Cli.Incoming
+import           Ambiata.Cli.Processing     (moveToArchive)
 
 import           P
 
@@ -23,13 +26,9 @@ import           System.IO
 import           System.IO.Temp
 import           System.Posix.Files
 
-import           TatooineCli.Data
-import           TatooineCli.Incoming
-import           TatooineCli.Processing     (moveToArchive)
-
-import           Test.IO.TatooineCli.Util
+import           Test.Ambiata.Cli.Arbitrary
+import           Test.IO.Ambiata.Cli.Util
 import           Test.QuickCheck
-import           Test.TatooineCli.Arbitrary
 
 prop_listfiles :: String -> UniquePair IncomingFile -> Property
 prop_listfiles junk (UniquePair f1 f2) = testIO . withSystemTempDirectory "prop_listfiles" $ \dir -> do
@@ -40,7 +39,7 @@ prop_listfiles junk (UniquePair f1 f2) = testIO . withSystemTempDirectory "prop_
   createDirectory $ dir </> "archive"
   writeFile fp1 junk
   createSymbolicLink fp1 fp2
-  testTatooine $ do
+  testAmbiata $ do
     ls <- scanIncoming $ IncomingDir dir
     pure $ (rights ls, lefts ls) === ([f1], [Irregular fp2])
 
@@ -49,7 +48,7 @@ prop_listweirdfiles f = testIO . withSystemTempDirectory "prop_listweirdfiles" $
   let fp = toFilePath (IncomingDir dir) f
   mk <- generate irregular
   mk fp
-  testTatooine $ do
+  testAmbiata $ do
     ls <- scanIncoming $ IncomingDir dir
     pure $ (rights ls, lefts ls) === ([], [Irregular fp])
   -- FIXME(sio): work out a sane way to test devices
@@ -60,7 +59,7 @@ prop_listweirdfiles f = testIO . withSystemTempDirectory "prop_listweirdfiles" $
           ]
 
 prop_listempty :: Property
-prop_listempty = testIO . withSystemTempDirectory "prop_listempty" $ \dir -> testTatooine $ do
+prop_listempty = testIO . withSystemTempDirectory "prop_listempty" $ \dir -> testAmbiata $ do
   ls <- scanIncoming $ IncomingDir dir
   pure $ ls === []
 
@@ -80,7 +79,7 @@ prop_hashcalc (UniquePair content content') = testIO . withSystemTempDirectory "
 prop_process_file :: IncomingFile -> String -> Property
 prop_process_file f junk = testIO . withSystemTempDirectory "prop_process_file" $ \dir' -> do
   let dir = IncomingDir dir'
-  testTatooine $ do
+  testAmbiata $ do
     prepareDir dir
     liftIO $ writeFile (toFilePath dir f) junk
     now <- liftIO getCurrentTime
@@ -106,7 +105,7 @@ existsInProcessing dir (Just (ProcessingFile name)) =
         doesFileExist $ (toWorkingPath dir Processing) </> unpack name >>= pure
 
 prop_process_changed_file :: IncomingFile -> String -> Property
-prop_process_changed_file f junk = testIO . withSystemTempDirectory "prop_process_changed_file" $ \dir' -> testTatooine $ do
+prop_process_changed_file f junk = testIO . withSystemTempDirectory "prop_process_changed_file" $ \dir' -> testAmbiata $ do
   let dir = IncomingDir dir'
   prepareDir dir
   liftIO $ writeFile (toFilePath dir f) junk
@@ -127,7 +126,7 @@ prop_process_changed_file f junk = testIO . withSystemTempDirectory "prop_proces
   pure $ (ls, ls', inProcessing, hashExists, pFile) === ([Right f], [Right f], False, True, Nothing)
 
 prop_process_dir :: UniquePair IncomingFile -> String -> Property
-prop_process_dir (UniquePair f1 f2) junk = testIO . withSystemTempDirectory "prop_process_dir" $ \dir' -> testTatooine $ do
+prop_process_dir (UniquePair f1 f2) junk = testIO . withSystemTempDirectory "prop_process_dir" $ \dir' -> testAmbiata $ do
   let dir = IncomingDir dir'
   prepareDir dir
   liftIO $ writeFile (toFilePath dir f1) junk
@@ -146,7 +145,7 @@ prop_process_dir (UniquePair f1 f2) junk = testIO . withSystemTempDirectory "pro
   pure $ (ls, length pFiles, length pFiles', allInProcessing, length bFiles, length bFiles') === ([], 0, 2, [True, True], 0, 0)
 
 prop_process_dir_processed :: UniquePair ProcessingFile -> String -> Property
-prop_process_dir_processed (UniquePair p1 p2) junk = testIO . withSystemTempDirectory "prop_process_dir_processed" $ \dir -> testTatooine $ do
+prop_process_dir_processed (UniquePair p1 p2) junk = testIO . withSystemTempDirectory "prop_process_dir_processed" $ \dir -> testAmbiata $ do
   let inc = IncomingDir dir
   let procFile = (toWorkingPath inc Processing </>) . unpack . unProcessingFile
   let (f1, f2) = bimap procFile procFile (p1, p2)
@@ -162,7 +161,7 @@ prop_process_dir_processed (UniquePair p1 p2) junk = testIO . withSystemTempDire
 prop_process_dir_content_change :: UniquePair IncomingFile -> UniquePair String -> Property
 prop_process_dir_content_change (UniquePair f1 f2) (UniquePair c1 c2) = testIO
                                                     . withSystemTempDirectory
-                                                    "prop_process_dir_content_change" $ \dir' -> testTatooine $ do
+                                                    "prop_process_dir_content_change" $ \dir' -> testAmbiata $ do
   let dir = IncomingDir dir'
   prepareDir dir
   liftIO $ writeFile (toFilePath dir f1) c1
@@ -186,7 +185,7 @@ prop_process_dir_content_change (UniquePair f1 f2) (UniquePair c1 c2) = testIO
 
 prop_cleanup_archived :: Retention -> ProcessingFile -> String -> Property
 prop_cleanup_archived r f1 c1 = testIO . withCurrentTime $ \now ->
-  withSystemTempDirectory "prop_process_dir_content_change" $ \dir' -> testTatooine $ do
+  withSystemTempDirectory "prop_process_dir_content_change" $ \dir' -> testAmbiata $ do
     future <- liftIO . generate $ futureWithin now r
     farFuture <- liftIO . generate $ futureOutside now r
     let dir = IncomingDir dir'
@@ -205,7 +204,7 @@ prop_cleanup_archived r f1 c1 = testIO . withCurrentTime $ \now ->
 -- also need to check for if go to delete a hashfile that is already deleted
 
 prop_file_removed_err :: IncomingFile -> String -> Property
-prop_file_removed_err f junk = testIO . withSystemTempDirectory "prop_file_removed_err" $ \dir' -> testTatooine $ do
+prop_file_removed_err f junk = testIO . withSystemTempDirectory "prop_file_removed_err" $ \dir' -> testAmbiata $ do
   let dir = IncomingDir dir'
   prepareDir dir
   liftIO $ writeFile (toFilePath dir f) junk
@@ -225,7 +224,7 @@ prop_file_removed_err f junk = testIO . withSystemTempDirectory "prop_file_remov
 
 
 prop_cleanup_junk :: UniquePair IncomingFile -> String -> Property
-prop_cleanup_junk (UniquePair f1 f2) junk = testIO . withSystemTempDirectory "prop_cleanup_junk" $ \dir' -> testTatooine $ do
+prop_cleanup_junk (UniquePair f1 f2) junk = testIO . withSystemTempDirectory "prop_cleanup_junk" $ \dir' -> testAmbiata $ do
   let dir = IncomingDir dir'
   prepareDir dir
   let hashDir = toWorkingPath dir Hashfiles
@@ -253,7 +252,7 @@ prop_cleanup_junk (UniquePair f1 f2) junk = testIO . withSystemTempDirectory "pr
   pure $ hashExists1 .&&. hashExists2 .&&. hashExists1' .&&. hashExists2' === False
 
 prop_prepare_dir :: Property
-prop_prepare_dir = testIO . withSystemTempDirectory "prop_prepare_dir" $ \dir' -> testTatooine $ do
+prop_prepare_dir = testIO . withSystemTempDirectory "prop_prepare_dir" $ \dir' -> testAmbiata $ do
   let dir = IncomingDir dir'
   archive <- liftIO $ doesDirectoryExist $ toWorkingPath dir Archive
   hashfiles <- liftIO $ doesDirectoryExist $ toWorkingPath dir Hashfiles

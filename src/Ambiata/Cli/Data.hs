@@ -3,7 +3,9 @@
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module TatooineCli.Data where
+module Ambiata.Cli.Data where
+
+import           Ambiata.Cli.Json
 
 import           Control.Exception
 
@@ -22,8 +24,6 @@ import           Data.Time.Format
 import           Mismi.Control.Amazonka hiding (Request)
 
 import           Network.HTTP.Types     (Header, hAuthorization)
-
-import           TatooineCli.Json
 
 
 newtype IncomingDir = IncomingDir {
@@ -185,17 +185,17 @@ renderCredentialError :: CredentialLoadError -> Text
 renderCredentialError (BadResponse t) = "An error occurred with the Ambiata API: " <> t
 renderCredentialError (DecodeError t) = "Incorrect JSON returned from Ambiata API: " <> t
 
-data TatooineClientError =
-    TatooineCredentialLoadError CredentialLoadError
-  | TatooineAWSError AWSError
-  | TatooineEnvError EnvErrors
-  | TatooineFilesystemError FilesystemError
+data AmbiataError =
+    AmbiataCredentialLoadError CredentialLoadError
+  | AmbiataAWSError AWSError
+  | AmbiataEnvError EnvErrors
+  | AmbiataFilesystemError FilesystemError
 
-renderClientError :: TatooineClientError -> Text
-renderClientError (TatooineCredentialLoadError e) = renderCredentialError e
-renderClientError (TatooineAWSError a) = awsErrorRender a
-renderClientError (TatooineEnvError t) = t
-renderClientError (TatooineFilesystemError e) = renderFilesystemError e
+renderClientError :: AmbiataError -> Text
+renderClientError (AmbiataCredentialLoadError e) = renderCredentialError e
+renderClientError (AmbiataAWSError a) = awsErrorRender a
+renderClientError (AmbiataEnvError t) = t
+renderClientError (AmbiataFilesystemError e) = renderFilesystemError e
 
 
 instance Show NoChangeAfter where

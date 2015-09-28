@@ -2,10 +2,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
-module Test.IO.TatooineCli.Credentials where
+module Test.IO.Ambiata.Cli.Credentials where
+
+import           Ambiata.Cli.Credentials
+import           Ambiata.Cli.Data
+import           Ambiata.Cli.Json
 
 import           P
-
 
 import           System.IO
 
@@ -19,12 +22,7 @@ import           Control.Monad.Trans.Either
 
 import           Network.HTTP.Client
 
-import           TatooineCli.Credentials
-import           TatooineCli.Data
-import           TatooineCli.Json
-
-import           Test.TatooineCli.Arbitrary ()
-
+import           Test.Ambiata.Cli.Arbitrary ()
 import           Test.QuickCheck
 import           Test.QuickCheck.Instances  ()
 import           Test.Snooze.Arbitrary      ()

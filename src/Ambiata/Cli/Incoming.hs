@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module TatooineCli.Incoming (
+module Ambiata.Cli.Incoming (
     processDir
   , scanIncoming
   , hashOfFile
@@ -14,6 +14,9 @@ module TatooineCli.Incoming (
   , prepareDir
   , visible
 ) where
+
+import           Ambiata.Cli.Data
+import           Ambiata.Cli.Files
 
 import           Control.Exception
 import           Control.Monad.IO.Class     (liftIO)
@@ -40,9 +43,6 @@ import           System.IO
 import           System.IO.Error
 import           System.Posix.Files
 
-import           TatooineCli.Data
-import           TatooineCli.Files
-
 import           Text.Printf
 
 --
@@ -50,14 +50,14 @@ import           Text.Printf
 -- /dropbox, /dropbox/.processing, /dropbox/.hashfiles, /dropbox/archive
 --
 
-hoistIOError :: Either IOException a -> EitherT TatooineClientError IO a
-hoistIOError = either (left . TatooineFilesystemError . UnknownFilesystemError) right
+hoistIOError :: Either IOException a -> EitherT AmbiataError IO a
+hoistIOError = either (left . AmbiataFilesystemError . UnknownFilesystemError) right
 
 -- |
 -- Scan for files that have had no "recent" changes, and move them
 -- to processing dir if ready. Hashfiles may be created. Tears and laughter.
 --
-processDir :: IncomingDir -> NoChangeAfter -> EitherT TatooineClientError IO ([IncomingFile], [ProcessingFile], [BadFileState])
+processDir :: IncomingDir -> NoChangeAfter -> EitherT AmbiataError IO ([IncomingFile], [ProcessingFile], [BadFileState])
 processDir dir age = do
   (badIncoming, incomingFiles) <- partitionEithers <$> scanIncoming dir
   (badOld, old) <- partitionEithers <$> scanProcessing dir -- find files left over from previous upload attempts
@@ -68,7 +68,7 @@ processDir dir age = do
 -- |
 -- prepare the incoming dir with working directories.
 --
-prepareDir :: IncomingDir -> EitherT TatooineClientError IO ()
+prepareDir :: IncomingDir -> EitherT AmbiataError IO ()
 prepareDir dir = hoistIOError =<< liftIO (try prepareDir')
   where prepareDir' = do
           mkdir $ unDir dir
@@ -80,7 +80,7 @@ prepareDir dir = hoistIOError =<< liftIO (try prepareDir')
 
 -- |
 -- Look for leftover files in .processing (from crashes during upload, etc.).
-scanProcessing :: IncomingDir -> EitherT TatooineClientError IO [Either BadFileState ProcessingFile]
+scanProcessing :: IncomingDir -> EitherT AmbiataError IO [Either BadFileState ProcessingFile]
 scanProcessing d = do
   fs <- scanDir wd
   pure $ (bimap id ProcessingFile) <$> fs
@@ -89,12 +89,12 @@ scanProcessing d = do
 -- |
 -- Look for candidate files in the current directory only. Non recursive.
 -- Don't change anything.
-scanIncoming :: IncomingDir -> EitherT TatooineClientError IO [Either BadFileState IncomingFile]
+scanIncoming :: IncomingDir -> EitherT AmbiataError IO [Either BadFileState IncomingFile]
 scanIncoming d = do
   fs <- scanDir $ unDir d
   pure $ (second IncomingFile) <$> fs
 
-scanDir :: FilePath -> EitherT TatooineClientError IO [Either BadFileState Text]
+scanDir :: FilePath -> EitherT AmbiataError IO [Either BadFileState Text]
 scanDir dir = do
   candidates <- liftIO $ filter ignores <$> (getDirectoryContents $ dir)
   fs <- mapM checkGoodness candidates
@@ -106,15 +106,15 @@ scanDir dir = do
         (_:_) -> True
         _ -> False
 
-      checkGoodness :: FilePath -> EitherT TatooineClientError IO (Either BadFileState Text)
+      checkGoodness :: FilePath -> EitherT AmbiataError IO (Either BadFileState Text)
       checkGoodness fp = getFileState (dir </> fp) >>= \case
         GoodFile        -> pure . Right $ T.pack fp
         BadFile badness -> pure $ Left badness
 
-getFileState :: FilePath -> EitherT TatooineClientError IO FileState
+getFileState :: FilePath -> EitherT AmbiataError IO FileState
 getFileState f = do
   t <- liftIO $ catch ((Right . typeFromStat) <$> getSymbolicLinkStatus f) handleIOError
-  either (left . TatooineFilesystemError) right t
+  either (left . AmbiataFilesystemError) right t
   where typeFromStat :: FileStatus -> FileState
         typeFromStat st
           | isRegularFile st     = GoodFile
@@ -200,7 +200,7 @@ hashOfFile d f = do
   pure $ LatestHash $ T.pack $ Strict.unpack bytes >>= printf "%02x"
 
 
-cleanUpArchived :: IncomingDir -> Retention -> UTCTime -> EitherT TatooineClientError IO ([ArchivedFile])
+cleanUpArchived :: IncomingDir -> Retention -> UTCTime -> EitherT AmbiataError IO ([ArchivedFile])
 cleanUpArchived inc retention utcNow = do
   candidates <- (fmap (adir </>) . filter visible) <$> (liftIO $ getDirectoryContents adir)
   deletes <- filterM deletable candidates

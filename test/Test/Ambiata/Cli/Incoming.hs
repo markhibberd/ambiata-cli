@@ -1,10 +1,10 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
-module Test.TatooineCli.Incoming where
+module Test.Ambiata.Cli.Incoming where
 
-import           TatooineCli.Data
-import           TatooineCli.Incoming
+import           Ambiata.Cli.Data
+import           Ambiata.Cli.Incoming
 
 import           P                          hiding (isPrefixOf)
 
@@ -12,8 +12,8 @@ import           System.IO
 
 import           Data.Text
 
+import           Test.Ambiata.Cli.Arbitrary ()
 import           Test.QuickCheck            hiding ((.&.))
-import           Test.TatooineCli.Arbitrary ()
 
 
 prop_hash_file :: IncomingDir -> IncomingFile -> Bool

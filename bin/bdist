@@ -5,7 +5,7 @@ OUTFILE="$1"
 APPLICATION="ambiata"
 EXES="ambiata"
 
-tmpdir=$(mktemp -d /tmp/tatooine-cli-distXXXXXX)
+tmpdir=$(mktemp -d /tmp/ambiata-cli-distXXXXXX)
 
 trap "rm -r ${tmpdir}" EXIT SIGHUP SIGINT SIGQUIT SIGTERM
 

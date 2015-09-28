@@ -3,7 +3,7 @@
 AMBIATA_CLI="${1:-./dist/build/ambiata/ambiata}"
 TATOOINE="./test-helpers/tatooine"
 MOUNTEBANK="./test-helpers/mountebank-tatooine"
-RUNDIR=$(mktemp  -p /tmp -d "tatooine-cli-XXXXXX")
+RUNDIR=$(mktemp  -p /tmp -d "ambiata-cli-XXXXXX")
 
 MOUNTEBANK_PIDFILE=${RUNDIR}/$(basename $MOUNTEBANK).pid
 TATOOINE_PIDFILE=${RUNDIR}/$(basename $TATOOINE).pid

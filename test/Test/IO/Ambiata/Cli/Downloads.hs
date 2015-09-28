@@ -1,8 +1,10 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
-module Test.IO.TatooineCli.Downloads where
+module Test.IO.Ambiata.Cli.Downloads where
 
+import           Ambiata.Cli.Data
+import           Ambiata.Cli.Downloads
 
 import           P
 
@@ -17,14 +19,10 @@ import           Control.Monad.IO.Class     (liftIO)
 import           Data.String
 import           Data.Text                  (unpack)
 
-import           TatooineCli.Data
-import           TatooineCli.Downloads
-
 import           Mismi.S3.Default
 import           Mismi.S3.Data              (Key (..), combineKey, withKey)
 
-import           Test.TatooineCli.Arbitrary ()
-
+import           Test.Ambiata.Cli.Arbitrary ()
 import           Test.Mismi.Amazonka
 
 

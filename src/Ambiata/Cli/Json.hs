@@ -3,7 +3,7 @@
 {-# LANGUAGE TemplateHaskell   #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module TatooineCli.Json (
+module Ambiata.Cli.Json (
   TemporaryAccess(..),
   TemporaryCreds(..)
 ) where
