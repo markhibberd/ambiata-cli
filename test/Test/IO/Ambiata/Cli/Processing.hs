@@ -26,9 +26,8 @@ import           Data.Text                  (Text, unpack)
 
 import           Disorder.Core.IO
 
-import           Mismi.Control.Amazonka
-import           Mismi.S3.Default
-import           Mismi.S3.Data              (Address (..))
+import           Mismi
+import           Mismi.S3 hiding ((</>))
 
 import           Test.Ambiata.Cli.Arbitrary ()
 import           Test.IO.Ambiata.Cli.Util

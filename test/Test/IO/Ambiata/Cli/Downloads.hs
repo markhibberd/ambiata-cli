@@ -19,8 +19,7 @@ import           Control.Monad.IO.Class     (liftIO)
 import           Data.String
 import           Data.Text                  (unpack)
 
-import           Mismi.S3.Default
-import           Mismi.S3.Data              (Key (..), combineKey, withKey)
+import           Mismi.S3 hiding ((</>))
 
 import           Test.Ambiata.Cli.Arbitrary ()
 import           Test.Mismi.Amazonka
@@ -30,7 +29,7 @@ prop_download :: String -> ServerFile -> Property
 prop_download junk f@(ServerFile name) = withLocalAWS $ \p a -> do
   let local = p </> (unpack name)
   liftIO $ writeFile local junk
-  upload local $ withKey (`combineKey` Key name) a
+  uploadOrFail local $ withKey (`combineKey` Key name) a
   fs <- serverFiles a
   pure $ fs === [f]
 
@@ -39,7 +38,7 @@ prop_to_download junk f@(ServerFile name) = withLocalAWS $ \p a -> do
   let dir = DownloadDir p
   let local = p </> (unpack name)
   liftIO $ writeFile local junk
-  upload local $ withKey (`combineKey` Key name) a
+  uploadOrFail local $ withKey (`combineKey` Key name) a
   ls <- filesToDownload dir a
   liftIO $ removeFile local
   ls' <- filesToDownload dir a
@@ -52,7 +51,7 @@ prop_download_files junk sf@(ServerFile name) = withLocalAWS $ \dir' address -> 
   -- add a file to remote store
   let local = dir' </> (unpack name)
   liftIO $ writeFile local junk
-  upload local $ withKey (`combineKey` Key name) address
+  uploadOrFail local $ withKey (`combineKey` Key name) address
 
   -- should be nothing locally
   liftIO $ removeFile local

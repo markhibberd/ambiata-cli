@@ -29,10 +29,8 @@ import           Control.Monad.Trans.Either
 
 import qualified Data.Text                    as T
 
-import           Mismi.Control.Amazonka
-import           Mismi.S3.Commands
-import           Mismi.S3.Data
-import           Mismi.S3.Internal
+import           Mismi
+import           Mismi.S3
 
 import           X.Control.Monad.Trans.Either
 
@@ -41,7 +39,7 @@ import           X.Control.Monad.Trans.Either
 --
 uploadReady :: IncomingDir -> Region -> UploadAccess -> EitherT AmbiataError IO [ArchivedFile]
 uploadReady dir r (UploadAccess (TemporaryAccess (TemporaryCreds k s sess) a)) =
-  firstEitherT AmbiataAWSError $ runAWSWithCreds r k s (Just $ sess) $ processReady dir a
+  firstEitherT AmbiataAWSError $ runAWSWithCredsT r k s (Just $ sess) $ processReady dir a
 
 
 processReady :: IncomingDir -> Address -> AWS [ArchivedFile]
@@ -52,7 +50,7 @@ processReady dir a = do
 
 uploadAction :: IncomingDir -> Address -> ProcessingFile -> AWS ArchivedFile
 uploadAction dir a f@(ProcessingFile fname) = do
-  retryAWSAction (retryWithBackoff 10) $ uploadWithMode Overwrite fpath (fileAddress f a)
+  uploadWithModeOrFail Overwrite fpath (fileAddress f a)
   liftIO $ moveToArchive dir f
   where
     fpath = toWorkingPath dir Processing <//> T.unpack fname

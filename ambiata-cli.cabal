@@ -19,9 +19,9 @@ library
   build-depends:
                        base                            >= 3          && < 5
                      , aeson                           == 0.8.*
-                     , amazonka                        == 99.*
-                     , amazonka-core                   == 99.*
-                     , amazonka-sts                    == 99.*
+                     , amazonka
+                     , amazonka-core
+                     , amazonka-sts
                      , ambiata-mismi-core
                      , ambiata-mismi-s3
                      , ambiata-p
