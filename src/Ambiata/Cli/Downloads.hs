@@ -36,7 +36,7 @@ import           Mismi.S3 hiding ((</>))
 --
 downloadReady :: DownloadDir -> Region -> DownloadAccess -> EitherT Error IO DownloadResult
 downloadReady dir r (DownloadAccess (TemporaryAccess (TemporaryCreds k s sess) a)) =
-  runAWSWithCredsT r k s (Just $ sess) $ downloadFiles dir a
+  runAWSWithCreds r k s (Just $ sess) $ downloadFiles dir a
 
 -- |
 -- Download any files from the remote dir that are not existing locally.

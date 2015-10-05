@@ -39,7 +39,7 @@ import           X.Control.Monad.Trans.Either
 --
 uploadReady :: IncomingDir -> Region -> UploadAccess -> EitherT AmbiataError IO [ArchivedFile]
 uploadReady dir r (UploadAccess (TemporaryAccess (TemporaryCreds k s sess) a)) =
-  firstEitherT AmbiataAWSError $ runAWSWithCredsT r k s (Just $ sess) $ processReady dir a
+  firstEitherT AmbiataAWSError $ runAWSWithCreds r k s (Just $ sess) $ processReady dir a
 
 
 processReady :: IncomingDir -> Address -> AWS [ArchivedFile]
