@@ -26,7 +26,6 @@ import           Mismi.Control.Amazonka
 
 import           P
 
-import           System.Directory
 import           System.Exit
 import           System.FileLock
 import           System.FilePath
@@ -45,7 +44,7 @@ orErrorAndDie ctx render act =
           exitWith (ExitFailure 1)
 
 uploadCommand :: UploadEnv -> IO ()
-uploadCommand e@(UploadEnv _ _ c) = runAction verb "upload" mode "ambiata-upload.lock" upload'
+uploadCommand e@(UploadEnv d _ c) = runAction verb "upload" mode (unDir d </> ".ambiata-upload.lock") upload'
  where upload'                  = doUpload e
                                     >>= liftIO . infoM (T.unpack logCtx) . T.unpack . renderUploadResult
        mode                     = runMode c
@@ -53,24 +52,18 @@ uploadCommand e@(UploadEnv _ _ c) = runAction verb "upload" mode "ambiata-upload
        logCtx                   = "Ambiata.uploadCommand"
 
 downloadCommand :: DownloadEnv -> IO ()
-downloadCommand e@(DownloadEnv _ c) = runAction verb "download" mode "ambiata-download.lock" download'
+downloadCommand e@(DownloadEnv d c) = runAction verb "download" mode (unDownloadDir d </> ".ambiata-download.lock") download'
  where download'                    = doDownload e
                                         >>= liftIO . infoM (T.unpack logCtx) . T.unpack . renderDownloadResult
        mode                         = runMode c
        verb                         = verbosity c
        logCtx                       = "Ambiata.downloadCommand"
 
--- |
--- We write to the system tmpdir instead of something sane like
--- /var/run because we want to make it as low-friction as possible,
--- and we're more likely to have write permissions in /tmp.
 runAction :: Verbosity -> Text -> RunMode -> FilePath -> EitherT AmbiataError IO a -> IO a
 runAction verb name m lockf act = do
   updateGlobalLogger rootLoggerName (setLevel verbLevel)
   debugM (T.unpack logCtx) $ "Starting " <> (T.unpack name)
-  tmp <- getTemporaryDirectory
-  let lp = tmp </> lockf
-  bracket (getLock lp) unlockFile (go m)
+  bracket (getLock lockf) unlockFile (go m)
   where go OneShot _ = act'
         go Daemon  _ = forever $ act' >> snooze (minutes 1)
 
