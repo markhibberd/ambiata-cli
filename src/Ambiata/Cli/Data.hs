@@ -21,7 +21,7 @@ import           Data.Text.Encoding     (encodeUtf8)
 import           Data.Time.Clock
 import           Data.Time.Format
 
-import           Mismi.Control.Amazonka hiding (Request)
+import           Mismi
 
 import           Network.HTTP.Types     (Header, hAuthorization)
 
@@ -187,13 +187,13 @@ renderCredentialError (DecodeError t) = "Incorrect JSON returned from Ambiata AP
 
 data AmbiataError =
     AmbiataCredentialLoadError CredentialLoadError
-  | AmbiataAWSError AWSError
+  | AmbiataAWSError Error
   | AmbiataEnvError EnvErrors
   | AmbiataFilesystemError FilesystemError
 
 renderClientError :: AmbiataError -> Text
 renderClientError (AmbiataCredentialLoadError e) = renderCredentialError e
-renderClientError (AmbiataAWSError a) = awsErrorRender a
+renderClientError (AmbiataAWSError a) = errorRender a
 renderClientError (AmbiataEnvError t) = t
 renderClientError (AmbiataFilesystemError e) = renderFilesystemError e
 

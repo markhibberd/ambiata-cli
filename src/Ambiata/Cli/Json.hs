@@ -18,14 +18,14 @@ import           P
 
 import           Network.AWS.Data
 
-import           Mismi.Control.Amazonka
-import           Mismi.S3.Data
+import           Mismi.S3
+import           Mismi.S3.Amazonka
 
 data TemporaryCreds =
   TemporaryCreds {
     tempKey      :: AccessKey,
     tempSecret   :: SecretKey,
-    sessionToken :: SecurityToken
+    sessionToken :: SessionToken
   } deriving (Eq, Show)
 
 data TemporaryAccess =
@@ -40,8 +40,8 @@ data TemporaryAccess =
 instance Show SecretKey where
   show (SecretKey bs)  = show bs
 
-instance Show SecurityToken where
-  show (SecurityToken bs) = show bs
+instance Show SessionToken where
+  show (SessionToken bs) = show bs
 
 
 instance ToJSON TemporaryAccess where
@@ -81,7 +81,7 @@ toSecret (String s) =
 toSecret _ = fail ("aws_secret must be a string")
 
 
-toToken' :: Value -> Parser SecurityToken
+toToken' :: Value -> Parser SessionToken
 toToken' (String s) =
-    pure $ SecurityToken (encodeUtf8 s)
+    pure $ SessionToken (encodeUtf8 s)
 toToken' _ = fail ("aws_session_token must be a string")

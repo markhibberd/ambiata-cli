@@ -22,7 +22,7 @@ import           Control.Exception
 import           Control.Monad.IO.Class       (liftIO)
 import           Control.Monad.Trans.Either
 
-import           Mismi.Control.Amazonka
+import           Mismi
 
 import           P
 
