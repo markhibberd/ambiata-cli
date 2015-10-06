@@ -95,7 +95,6 @@ test-suite test
   build-depends:
                       base                            >= 3          && < 5
                     , QuickCheck                      == 2.7.*
-                    , directory
                     , ambiata-cli
                     , ambiata-disorder-aeson
                     , ambiata-disorder-core
@@ -103,10 +102,12 @@ test-suite test
                     , ambiata-mismi-core-test
                     , ambiata-mismi-s3-test
                     , ambiata-p
+                    , directory
                     , filepath
                     , quickcheck-instances            == 0.3.*
                     , text                            == 1.2.1.*
                     , time
+                    , turtle                          == 1.2.*
 
 
 test-suite test-io
@@ -138,14 +139,15 @@ test-suite test-io
                     , directory
                     , either
                     , filepath
+                    , http-client                     == 0.4.18.*
                     , quickcheck-instances            == 0.3.*
                     , scotty
                     , temporary
                     , text                            == 1.2.1.*
                     , time
                     , transformers
+                    , turtle                          == 1.2.*
                     , unix
-                    , http-client                     == 0.4.18.*
 
 test-suite test-cli
   type:               exitcode-stdio-1.0
@@ -159,5 +161,17 @@ test-suite test-cli
 
   build-depends:
                       base                            >= 3          && < 5
+                    , QuickCheck                      == 2.7.*
+                    , ambiata-cli
+                    , ambiata-disorder-aeson
                     , ambiata-disorder-core
+                    , ambiata-disorder-corpus
+                    , ambiata-mismi-core-test
+                    , ambiata-mismi-s3-test
                     , ambiata-p
+                    , directory
+                    , filepath
+                    , quickcheck-instances            == 0.3.*
+                    , text                            == 1.2.1.*
+                    , time
+                    , turtle                          == 1.2.*
