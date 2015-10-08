@@ -25,6 +25,7 @@ import           Data.Text
 import qualified Data.Text as T
 import           Data.Text.Encoding
 
+import           Control.Monad.Catch        (catch)
 import           Control.Monad.IO.Class     (liftIO)
 import           Control.Monad.Trans.Either
 
@@ -50,7 +51,7 @@ obtainCredentials :: PermissionDirection -> AmbiataAPIKey -> AmbiataAPIEndpoint 
 obtainCredentials pd key' (AmbiataAPIEndpoint ep)  = do
   m <- liftIO $ newManager tlsManagerSettings
   req <- parseUrl $ T.unpack ep
-  res <- liftIO . httpGo m $ getTokenRequest pd req key'
+  res <- (liftIO . httpGo m $ getTokenRequest pd req key') `catch` (\(e :: HttpException) -> left $ NetworkException e)
   case responseStatus res of
     (Status 200 _) ->
       hoistEither . first (DecodeError . pack) . eitherDecode $ responseBody res

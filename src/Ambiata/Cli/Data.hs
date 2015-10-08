@@ -24,6 +24,7 @@ import           Data.Time.Format
 import           Mismi
 
 import           Network.HTTP.Types     (Header, hAuthorization)
+import           Network.HTTP.Client    (HttpException (..))
 
 
 newtype IncomingDir = IncomingDir {
@@ -181,7 +182,8 @@ data DownloadEnv =
 data CredentialLoadError =
     BadResponse Text
   | DecodeError Text
-  deriving (Show, Eq)
+  | NetworkException HttpException
+  deriving Show
 
 data FilesystemError =
   UnknownFilesystemError IOException deriving (Show, Eq)
@@ -199,6 +201,8 @@ renderCredentialError e =
       "An error occurred with the Ambiata API: " <> t
     DecodeError t ->
       "Incorrect JSON returned from Ambiata API: " <> t
+    NetworkException t ->
+      "A network error has occured with the Ambiata API: " <> (T.pack $ show t)
 
 data AmbiataError =
     AmbiataCredentialLoadError CredentialLoadError
