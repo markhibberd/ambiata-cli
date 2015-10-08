@@ -82,7 +82,7 @@ runAction verb name m lockf act = do
 doDownload ::  DownloadEnv -> EitherT AmbiataError IO DownloadResult
 doDownload (DownloadEnv dir c) = do
   creds <- bimapEitherT AmbiataCredentialLoadError id $ obtainCredentialsForDownload (apiKey c) (apiEndpoint c)
-  bimapEitherT AmbiataAWSError id $ downloadReady dir Sydney creds
+  downloadReady dir Sydney creds
 
 doUpload :: UploadEnv -> EitherT AmbiataError IO UploadResult
 doUpload (UploadEnv dir retention c) = do

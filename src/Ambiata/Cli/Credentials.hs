@@ -39,10 +39,12 @@ import           Network.HTTP.Types
 
 
 obtainCredentialsForUpload :: AmbiataAPIKey -> AmbiataAPIEndpoint -> EitherT CredentialLoadError IO UploadAccess
-obtainCredentialsForUpload k e = fmap UploadAccess $ obtainCredentials Upload k e
+obtainCredentialsForUpload k e =
+  fmap UploadAccess $ obtainCredentials Upload k e
 
 obtainCredentialsForDownload :: AmbiataAPIKey -> AmbiataAPIEndpoint -> EitherT CredentialLoadError IO DownloadAccess
-obtainCredentialsForDownload k e = fmap DownloadAccess $ obtainCredentials Download k e
+obtainCredentialsForDownload k e =
+  fmap DownloadAccess $ obtainCredentials Download k e
 
 obtainCredentials :: PermissionDirection -> AmbiataAPIKey -> AmbiataAPIEndpoint -> EitherT CredentialLoadError IO TemporaryAccess
 obtainCredentials pd key' (AmbiataAPIEndpoint ep)  = do

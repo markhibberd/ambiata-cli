@@ -7,22 +7,16 @@
 --
 
 module Ambiata.Cli.Processing (
-    availableFiles,
-    moveToArchive,
-    uploadAction,
-    processReady,
-    fileAddress,
-    uploadReady
-) where
+    availableFiles
+  , moveToArchive
+  , uploadAction
+  , processReady
+  , fileAddress
+  , uploadReady
+  ) where
 
 import           Ambiata.Cli.Data
 import           Ambiata.Cli.Json
-
-import           P
-
-import           System.Directory
-import           System.FilePath              hiding ((</>))
-import           System.IO
 
 import           Control.Monad.IO.Class       (liftIO)
 import           Control.Monad.Trans.Either
@@ -32,14 +26,18 @@ import qualified Data.Text                    as T
 import           Mismi
 import           Mismi.S3
 
-import           X.Control.Monad.Trans.Either
+import           P
+
+import           System.Directory
+import           System.FilePath              hiding ((</>))
+import           System.IO
 
 -- |
 -- Upload the files that are in the processing dir, and move to archive when done.
 --
 uploadReady :: IncomingDir -> Region -> UploadAccess -> EitherT AmbiataError IO [ArchivedFile]
 uploadReady dir r (UploadAccess (TemporaryAccess (TemporaryCreds k s sess) a)) =
-  firstEitherT AmbiataAWSError $ runAWSWithCreds r k s (Just $ sess) $ processReady dir a
+  bimapEitherT AmbiataAWSUploadError id $ runAWSWithCreds r k s (Just $ sess) $ processReady dir a
 
 
 processReady :: IncomingDir -> Address -> AWS [ArchivedFile]

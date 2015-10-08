@@ -150,59 +150,80 @@ data RunMode = Daemon | OneShot
 data Verbosity = Verbose | Quiet
   deriving (Eq, Show)
 
-data CommonEnv = CommonEnv {
-    apiKey      :: AmbiataAPIKey
-  , apiEndpoint :: AmbiataAPIEndpoint
-  , runMode     :: RunMode
-  , verbosity   :: Verbosity
-} deriving (Show)
+data CommonEnv =
+  CommonEnv {
+      apiKey      :: AmbiataAPIKey
+    , apiEndpoint :: AmbiataAPIEndpoint
+    , runMode     :: RunMode
+    , verbosity   :: Verbosity
+    } deriving (Show)
 
-newtype Retention = Retention { retentionDays :: Int }
-  deriving (Eq, Show, Ord)
+newtype Retention =
+  Retention {
+      retentionDays :: Int
+    }
+    deriving (Eq, Show, Ord)
 
 renderRetention :: Retention -> Text
-renderRetention (Retention 0) = "never"
-renderRetention (Retention a) = T.pack (show a) <> " days"
+renderRetention r =
+  case r of
+    Retention 0 ->
+      "never"
+    Retention a ->
+      T.pack (show a) <> " days"
 
-data UploadEnv = UploadEnv IncomingDir Retention CommonEnv
-  deriving (Show)
+data UploadEnv =
+  UploadEnv IncomingDir Retention CommonEnv deriving (Show)
 
-data DownloadEnv = DownloadEnv DownloadDir CommonEnv
-  deriving (Show)
+data DownloadEnv =
+  DownloadEnv DownloadDir CommonEnv deriving (Show)
 
-type EnvErrors = Text
-
-data CredentialLoadError = BadResponse Text | DecodeError Text
+data CredentialLoadError =
+    BadResponse Text
+  | DecodeError Text
   deriving (Show, Eq)
 
-data FilesystemError = UnknownFilesystemError IOException
-  deriving (Show, Eq)
+data FilesystemError =
+  UnknownFilesystemError IOException deriving (Show, Eq)
 
 renderFilesystemError :: FilesystemError -> Text
-renderFilesystemError (UnknownFilesystemError t) = "Unknown filesystem error: " <> (T.pack $ show t)
+renderFilesystemError e =
+  case e of
+    UnknownFilesystemError t ->
+      "Unknown filesystem error: " <> (T.pack $ show t)
 
 renderCredentialError :: CredentialLoadError -> Text
-renderCredentialError (BadResponse t) = "An error occurred with the Ambiata API: " <> t
-renderCredentialError (DecodeError t) = "Incorrect JSON returned from Ambiata API: " <> t
+renderCredentialError e =
+  case e of
+    BadResponse t ->
+      "An error occurred with the Ambiata API: " <> t
+    DecodeError t ->
+      "Incorrect JSON returned from Ambiata API: " <> t
 
 data AmbiataError =
     AmbiataCredentialLoadError CredentialLoadError
-  | AmbiataAWSError Error
-  | AmbiataEnvError EnvErrors
+  | AmbiataAWSUploadError Error
+  | AmbiataAWSDownloadError Error
   | AmbiataFilesystemError FilesystemError
 
 renderClientError :: AmbiataError -> Text
-renderClientError (AmbiataCredentialLoadError e) = renderCredentialError e
-renderClientError (AmbiataAWSError a) = errorRender a
-renderClientError (AmbiataEnvError t) = t
-renderClientError (AmbiataFilesystemError e) = renderFilesystemError e
-
+renderClientError ae =
+  case ae of
+    AmbiataCredentialLoadError e ->
+      renderCredentialError e
+    AmbiataAWSUploadError a ->
+      "An error occured whilst uploading with the AWS API: " <> errorRender a
+    AmbiataAWSDownloadError a ->
+      "An error occured whilst downloading with the AWS API: " <> errorRender a
+    AmbiataFilesystemError e ->
+      renderFilesystemError e
 
 instance Show NoChangeAfter where
   show f = formatTime defaultTimeLocale "%Y/%m/%d %H:%M:%S" $ unTime f
 
 processingPrefix :: UTCTime -> String
-processingPrefix = formatTime defaultTimeLocale "%H-%M-%S-"
+processingPrefix =
+  formatTime defaultTimeLocale "%H-%M-%S-"
 
 data FileReady =
     Ready
@@ -212,14 +233,19 @@ data FileReady =
   deriving (Show, Eq, Ord)
 
 toFilePath :: IncomingDir -> IncomingFile -> FilePath
-toFilePath (IncomingDir d) (IncomingFile f) = d </> (T.unpack f)
+toFilePath (IncomingDir d) (IncomingFile f) =
+  d </> (T.unpack f)
 
 toWorkingPath :: IncomingDir -> WorkingDir -> FilePath
 toWorkingPath (IncomingDir d) =
-                        \case
-                            Archive -> d </> "archive"
-                            Processing -> d </> ".processing"
-                            Hashfiles -> d </> ".hashfiles"
+  \case
+    Archive ->
+      d </> "archive"
+    Processing ->
+      d </> ".processing"
+    Hashfiles ->
+      d </> ".hashfiles"
 
 tokenHeader :: AmbiataAPIKey -> Header
-tokenHeader (AmbiataAPIKey k) = (hAuthorization, encodeUtf8 $ "token " <> k)
+tokenHeader (AmbiataAPIKey k) =
+  (hAuthorization, encodeUtf8 $ "token " <> k)

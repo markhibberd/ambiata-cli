@@ -12,16 +12,10 @@ module Ambiata.Cli.Downloads (
   , downloadFiles
   , downloadReady
   , isFileMissing
-) where
+  ) where
 
 import           Ambiata.Cli.Data
 import           Ambiata.Cli.Json
-
-import           P
-
-import           System.Directory
-import           System.FilePath
-import           System.IO
 
 import           Control.Monad.IO.Class     (liftIO)
 import           Control.Monad.Trans.Either
@@ -31,12 +25,18 @@ import qualified Data.Text                  as T
 import           Mismi
 import           Mismi.S3 hiding ((</>))
 
+import           P
+
+import           System.Directory
+import           System.FilePath
+import           System.IO
+
 -- |
 -- Do the download with the given credentials
 --
-downloadReady :: DownloadDir -> Region -> DownloadAccess -> EitherT Error IO DownloadResult
+downloadReady :: DownloadDir -> Region -> DownloadAccess -> EitherT AmbiataError IO DownloadResult
 downloadReady dir r (DownloadAccess (TemporaryAccess (TemporaryCreds k s sess) a)) =
-  runAWSWithCreds r k s (Just $ sess) $ downloadFiles dir a
+  bimapEitherT AmbiataAWSDownloadError id $ runAWSWithCreds r k s (Just $ sess) $ downloadFiles dir a
 
 -- |
 -- Download any files from the remote dir that are not existing locally.

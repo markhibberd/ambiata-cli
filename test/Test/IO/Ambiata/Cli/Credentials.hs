@@ -35,7 +35,8 @@ prop_upload_creds k ta = testIO $ do
   let bs = encode ta
   ta' <- withServer (S.post (regex "/.*") $ S.raw bs) $ \u ->
     runEitherT $ obtainCredentialsForUpload k (AmbiataAPIEndpoint $ "http://" <> (decodeUtf8 $ host u) <> ":" <> (T.pack . show $ port u))
-  pure $ ta' === Right (UploadAccess ta)
+  r <- either (fail . T.unpack . (<>) "Upload creds failed with: " . renderCredentialError) pure ta'
+  pure $ r === UploadAccess ta
 
 
 
