@@ -88,5 +88,5 @@ upload directories or symbolic links.
 
 The process will monitor `UPLOAD_DIR` for new files, but it won't
 start uploading them until they have been present in the directory for
-at least ten minutes without changing; this is to avoid uploading
+at least 2 minutes without changing; this is to avoid uploading
 partial files.
