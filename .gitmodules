@@ -10,9 +10,6 @@
 [submodule "lib/p"]
 	path = lib/p
 	url = git@github.com:ambiata/p
-[submodule "lib/snooze"]
-	path = lib/snooze
-	url = git@github.com:ambiata/snooze
 [submodule "lib/twine"]
 	path = lib/twine
 	url = git@github.com:ambiata/twine
