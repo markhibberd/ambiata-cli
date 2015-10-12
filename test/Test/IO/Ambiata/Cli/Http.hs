@@ -29,11 +29,19 @@ import           Web.Scotty hiding (request)
 
 prop_httpGo :: Property
 prop_httpGo =
-  forAll (choose (100, 599)) $ \s -> testIO $
+  forAll (choose (100, 499)) $ \s -> testIO $
   withServer (get "/" . status $ Status s "") $ \req -> do
     mgr <- newManager defaultManagerSettings
-    resp <- httpGo httpRetryPolicy mgr req
-    pure $ responseStatus resp == Status s ""
+    (resp, ec) <- httpGo httpRetryPolicy mgr req
+    pure $ (responseStatus resp, ec) === (Status s "", ErrorCount 0)
+
+prop_httpGo_errors :: Property
+prop_httpGo_errors =
+  forAll (choose (500, 599)) $ \s -> testIO $
+  withServer (get "/" . status $ Status s "") $ \req -> do
+    mgr <- newManager defaultManagerSettings
+    (resp, ec) <- httpGo (limitRetries 5) mgr req
+    pure $ (responseStatus resp, ec) === (Status s "", ErrorCount 6)
 
 
 withServer :: ScottyM () -> (Request -> IO a) -> IO a

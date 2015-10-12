@@ -49,7 +49,7 @@ obtainCredentials :: PermissionDirection -> AmbiataAPIKey -> AmbiataAPIEndpoint 
 obtainCredentials pd key' (AmbiataAPIEndpoint ep)  = do
   m <- liftIO $ newManager tlsManagerSettings
   req <- parseUrl $ T.unpack ep
-  res <- (liftIO . httpGo httpRetryPolicy m $ getTokenRequest pd req key') `catch` (\(e :: HttpException) -> left $ NetworkException e)
+  (res, _) <- (liftIO . httpGo httpRetryPolicy m $ getTokenRequest pd req key') `catch` (\(e :: HttpException) -> left $ NetworkException e)
   case responseStatus res of
     (Status 200 _) ->
       hoistEither . first (DecodeError . pack) . eitherDecode $ responseBody res
