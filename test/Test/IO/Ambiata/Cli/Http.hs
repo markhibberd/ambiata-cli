@@ -32,7 +32,7 @@ prop_httpGo =
   forAll (choose (100, 599)) $ \s -> testIO $
   withServer (get "/" . status $ Status s "") $ \req -> do
     mgr <- newManager defaultManagerSettings
-    resp <- httpGo mgr req
+    resp <- httpGo httpRetryPolicy mgr req
     pure $ responseStatus resp == Status s ""
 
 
