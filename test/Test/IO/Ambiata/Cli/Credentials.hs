@@ -23,10 +23,9 @@ import           Control.Monad.Trans.Either
 import           Network.HTTP.Client
 
 import           Test.Ambiata.Cli.Arbitrary ()
+import           Test.IO.Ambiata.Cli.Http
 import           Test.QuickCheck
 import           Test.QuickCheck.Instances  ()
-import           Test.Snooze.Arbitrary      ()
-import           Test.Snooze.Server
 
 import           Web.Scotty                 as S
 

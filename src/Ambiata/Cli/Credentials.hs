@@ -14,6 +14,7 @@ module Ambiata.Cli.Credentials (
 ) where
 
 import           Ambiata.Cli.Data
+import           Ambiata.Cli.Http
 import           Ambiata.Cli.Json
 
 import           P
@@ -30,9 +31,6 @@ import           Control.Monad.IO.Class     (liftIO)
 import           Control.Monad.Trans.Either
 
 import           Data.Aeson
-
-import           Snooze.Core
-import           Snooze.Url                 (encodePathSegmentsBS)
 
 import           Network.HTTP.Client
 import           Network.HTTP.Client.TLS
