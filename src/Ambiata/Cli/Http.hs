@@ -49,14 +49,14 @@ httpGo' mgr req =
 httpGo :: RetryPolicy -> Manager -> Request -> IO (Response BSL.ByteString, ErrorCount)
 httpGo rp mgr req =
     runWriterT
-  . retrying rp (\_ -> countError . pure . httpStatusRetry . responseStatus)
+  . retrying rp (const $ countError . pure . httpStatusRetry . responseStatus)
   . recovering rp [const httpExceptionHandler]
   . lift
   $ httpGo' mgr req
 
 httpRetryPolicy :: RetryPolicy
 httpRetryPolicy =
-  capDelay (toMicroseconds $ seconds 60) $ limitRetries 5 <> exponentialBackoff (toMicroseconds $ milliseconds 100)
+  capDelay (toMicroseconds $ seconds 60) $ limitRetries 10 <> exponentialBackoff (toMicroseconds $ milliseconds 200)
 
 -- | Return true for any 'HttpException'
 httpExceptionHandler :: Monad m => Handler (WriterT ErrorCount m) Bool
