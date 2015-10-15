@@ -19,6 +19,7 @@ import           Ambiata.Cli.Data
 import           Ambiata.Cli.Json
 
 import           Control.Monad.IO.Class       (liftIO)
+import           Control.Monad.Reader         (local)
 import           Control.Monad.Trans.Either
 
 import qualified Data.Text                    as T
@@ -37,7 +38,9 @@ import           System.IO
 --
 uploadReady :: IncomingDir -> Region -> UploadAccess -> EitherT AmbiataError IO [ArchivedFile]
 uploadReady dir r (UploadAccess (TemporaryAccess (TemporaryCreds k s sess) a)) =
-  bimapEitherT AmbiataAWSUploadError id $ runAWSWithCreds r k s (Just $ sess) $ processReady dir a
+  bimapEitherT AmbiataAWSUploadError id $ runAWSWithCreds r k s (Just $ sess)
+    . local (configureRetries 10)
+    $ processReady dir a
 
 
 processReady :: IncomingDir -> Address -> AWS [ArchivedFile]
