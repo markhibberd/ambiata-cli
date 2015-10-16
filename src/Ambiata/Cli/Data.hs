@@ -216,9 +216,9 @@ renderClientError ae =
     AmbiataCredentialLoadError e ->
       renderCredentialError e
     AmbiataAWSUploadError a ->
-      "An error occured whilst uploading with the AWS API: " <> errorRender a
+      "An error occured whilst uploading with the AWS API: " <> renderError a
     AmbiataAWSDownloadError a ->
-      "An error occured whilst downloading with the AWS API: " <> errorRender a
+      "An error occured whilst downloading with the AWS API: " <> renderError a
     AmbiataFilesystemError e ->
       renderFilesystemError e
 
