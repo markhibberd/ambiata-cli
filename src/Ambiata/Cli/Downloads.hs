@@ -35,8 +35,9 @@ import           System.IO
 -- Do the download with the given credentials
 --
 downloadReady :: DownloadDir -> Region -> DownloadAccess -> EitherT AmbiataError IO DownloadResult
-downloadReady dir r (DownloadAccess (TemporaryAccess (TemporaryCreds k s sess) a)) =
-  bimapEitherT AmbiataAWSDownloadError id $ runAWSWithCreds r k s (Just $ sess) $ downloadFiles dir a
+downloadReady dir r (DownloadAccess (TemporaryAccess (TemporaryCreds k s sess) a)) = do
+  env <- setDebugging <$> getDebugging <*> newEnvFromCreds r k s (Just sess)
+  bimapEitherT AmbiataAWSDownloadError id . runAWS env $ downloadFiles dir a
 
 -- |
 -- Download any files from the remote dir that are not existing locally.

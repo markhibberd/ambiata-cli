@@ -37,8 +37,9 @@ import           System.IO
 -- Upload the files that are in the processing dir, and move to archive when done.
 --
 uploadReady :: IncomingDir -> Region -> UploadAccess -> EitherT AmbiataError IO [ArchivedFile]
-uploadReady dir r (UploadAccess (TemporaryAccess (TemporaryCreds k s sess) a)) =
-  bimapEitherT AmbiataAWSUploadError id $ runAWSWithCreds r k s (Just $ sess)
+uploadReady dir r (UploadAccess (TemporaryAccess (TemporaryCreds k s sess) a)) = do
+  env <- setDebugging <$> getDebugging <*> newEnvFromCreds r k s (Just sess)
+  bimapEitherT AmbiataAWSUploadError id $ runAWS env
     . local (configureRetries 10)
     $ processReady dir a
 
