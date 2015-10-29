@@ -8,11 +8,12 @@ module Ambiata.Cli (
   , doDownload
 ) where
 
-import           Ambiata.Cli.Credentials
+import           Ambiata.Cli.Api
 import           Ambiata.Cli.Data
 import           Ambiata.Cli.Downloads
 import           Ambiata.Cli.Incoming
 import           Ambiata.Cli.Processing
+import           Ambiata.Cli.Rest
 
 import           Data.Text                    (Text)
 import qualified Data.Text                    as T
@@ -81,14 +82,18 @@ runAction verb name m lockf act = do
 
 doDownload ::  DownloadEnv -> EitherT AmbiataError IO DownloadResult
 doDownload (DownloadEnv dir c) = do
-  creds <- bimapEitherT AmbiataCredentialLoadError id $ obtainCredentialsForDownload (apiKey c) (apiEndpoint c)
+  creds <- bimapEitherT AmbiataApiError id
+    . apiCall (apiKey c) (apiEndpoint c)
+    $ obtainCredentialsForDownload
   downloadReady dir Sydney creds
 
 doUpload :: UploadEnv -> EitherT AmbiataError IO UploadResult
 doUpload (UploadEnv dir retention c) = do
   -- Connect to the API before doing anything else, so we fail fast in
   -- the case of a configuration error.
-  creds <- bimapEitherT AmbiataCredentialLoadError id $ obtainCredentialsForUpload (apiKey c) (apiEndpoint c)
+  creds <- bimapEitherT AmbiataApiError id
+    . apiCall (apiKey c) (apiEndpoint c)
+    $ obtainCredentialsForUpload
   prepareDir dir
   now   <- liftIO $ getCurrentTime
   (incoming, processing, bads)  <- processDir dir (NoChangeAfter $ twoMinutesBefore now)

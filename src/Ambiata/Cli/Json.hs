@@ -4,9 +4,15 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Ambiata.Cli.Json (
-  TemporaryAccess(..),
-  TemporaryCreds(..)
-) where
+    TemporaryAccess(..)
+  , TemporaryCreds(..)
+  , toAddress
+  , toAccess
+  , toSecret
+  , toToken'
+  , toText
+  , addressToText
+  ) where
 
 
 import           Data.Aeson
@@ -42,26 +48,6 @@ instance Show SecretKey where
 
 instance Show SessionToken where
   show (SessionToken bs) = show bs
-
-
-instance ToJSON TemporaryAccess where
-  toJSON (tt) =
-    object [  "access_key" .= (toText $ tempKey creds)
-            , "access_secret" .= (toText $ tempSecret creds)
-            , "session_token" .= (toText $ sessionToken creds)
-            , "s3_path" .= addressToText (s3Path tt)
-         ]
-    where
-      creds = tempCreds tt
-
-instance FromJSON TemporaryAccess where
-  parseJSON (Object o) = TemporaryAccess
-                            <$> (TemporaryCreds <$> (o .: "access_key" >>= toAccess)
-                                                <*> (o .: "access_secret" >>= toSecret)
-                                                <*> (o .: "session_token" >>= toToken'))
-                            <*> (o .: "s3_path" >>= toAddress)
-  parseJSON x =  typeMismatch "Not a valid TemporaryAccess object" x
-
 
 toAddress :: Value -> Parser Address
 toAddress (String s) =
