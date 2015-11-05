@@ -2,11 +2,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
-module Test.IO.Ambiata.Cli.Credentials where
+module Test.IO.Ambiata.Cli.Api.Upload where
 
-import           Ambiata.Cli.Credentials
+import           Ambiata.Cli.Api.Upload
+import           Ambiata.Cli.Rest
 import           Ambiata.Cli.Data
 import           Ambiata.Cli.Json
+import qualified Ambiata.Cli.Json.Upload as JU
 
 import           P
 
@@ -31,10 +33,11 @@ import           Web.Scotty                 as S
 
 prop_upload_creds :: AmbiataAPIKey -> TemporaryAccess -> Property
 prop_upload_creds k ta = testIO $ do
-  let bs = encode ta
-  ta' <- withServer (S.post (regex "/.*") $ S.raw bs) $ \u ->
-    runEitherT $ obtainCredentialsForUpload k (AmbiataAPIEndpoint $ "http://" <> (decodeUtf8 $ host u) <> ":" <> (T.pack . show $ port u))
-  r <- either (fail . T.unpack . (<>) "Upload creds failed with: " . renderCredentialError) pure ta'
+  ta' <- withServer (S.post (regex "/.*") . S.raw . encode . JU.ResponseJsonV1 $ ta) $ \u ->
+    runEitherT
+      . apiCall k (AmbiataAPIEndpoint $ "http://" <> (decodeUtf8 $ host u) <> ":" <> (T.pack . show $ port u))
+      $ obtainCredentialsForUpload
+  r <- either (fail . T.unpack . (<>) "Upload creds failed with: " . renderApiError) pure ta'
   pure $ r === UploadAccess ta
 
 

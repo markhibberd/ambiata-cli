@@ -32,6 +32,7 @@ library
                      , blaze-builder                   == 0.4.*
                      , bytestring                      == 0.10.*
                      , cryptohash                      == 0.11.*
+                     , data-default                    == 0.5.*
                      , directory                       == 1.2.*
                      , either                          == 4.3.*
                      , envparse                        == 0.2.1
@@ -63,6 +64,7 @@ library
 
   exposed-modules:
                        Ambiata.Cli
+                       Ambiata.Cli.Api
                        Ambiata.Cli.Data
                        Ambiata.Cli.Http
                        Ambiata.Cli.Incoming
@@ -70,8 +72,13 @@ library
                        Ambiata.Cli.Files
                        Ambiata.Cli.Processing
                        Ambiata.Cli.Env
-                       Ambiata.Cli.Credentials
+                       Ambiata.Cli.Rest
                        Ambiata.Cli.Downloads
+
+                       Ambiata.Cli.Api.Download
+                       Ambiata.Cli.Api.Upload
+
+                       Ambiata.Cli.Json.Upload
 
 executable ambiata
   if flag(staticgmp)

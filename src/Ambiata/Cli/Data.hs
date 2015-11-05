@@ -17,13 +17,13 @@ import           System.Locale
 import           Data.String
 import           Data.Text              (Text)
 import qualified Data.Text              as T
-import           Data.Text.Encoding     (encodeUtf8)
+import           Data.Text.Encoding     (decodeUtf8, encodeUtf8)
 import           Data.Time.Clock
 import           Data.Time.Format
 
 import           Mismi
 
-import           Network.HTTP.Types     (Header, hAuthorization)
+import           Network.HTTP.Types     (Header, Status, hAuthorization, statusMessage)
 import           Network.HTTP.Client    (HttpException (..))
 
 
@@ -179,8 +179,8 @@ data UploadEnv =
 data DownloadEnv =
   DownloadEnv DownloadDir CommonEnv deriving (Show)
 
-data CredentialLoadError =
-    BadResponse Text
+data ApiError =
+    BadResponse Status
   | DecodeError Text
   | NetworkException HttpException
   deriving Show
@@ -194,18 +194,18 @@ renderFilesystemError e =
     UnknownFilesystemError t ->
       "Unknown filesystem error: " <> (T.pack $ show t)
 
-renderCredentialError :: CredentialLoadError -> Text
-renderCredentialError e =
+renderApiError :: ApiError -> Text
+renderApiError e =
   case e of
     BadResponse t ->
-      "An error occurred with the Ambiata API: " <> t
+      "An error occurred with the Ambiata API: " <> (decodeUtf8 . statusMessage) t
     DecodeError t ->
       "Incorrect JSON returned from Ambiata API: " <> t
     NetworkException t ->
       "A network error has occured with the Ambiata API: " <> (T.pack $ show t)
 
 data AmbiataError =
-    AmbiataCredentialLoadError CredentialLoadError
+    AmbiataApiError ApiError
   | AmbiataAWSUploadError Error
   | AmbiataAWSDownloadError Error
   | AmbiataFilesystemError FilesystemError
@@ -213,8 +213,8 @@ data AmbiataError =
 renderClientError :: AmbiataError -> Text
 renderClientError ae =
   case ae of
-    AmbiataCredentialLoadError e ->
-      renderCredentialError e
+    AmbiataApiError e ->
+      renderApiError e
     AmbiataAWSUploadError a ->
       "An error occured whilst uploading with the AWS API: " <> renderError a
     AmbiataAWSDownloadError a ->
