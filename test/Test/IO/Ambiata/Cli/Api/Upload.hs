@@ -7,7 +7,6 @@ module Test.IO.Ambiata.Cli.Api.Upload where
 import           Ambiata.Cli.Api.Upload
 import           Ambiata.Cli.Rest
 import           Ambiata.Cli.Data
-import           Ambiata.Cli.Json
 import qualified Ambiata.Cli.Json.Upload as JU
 
 import           P

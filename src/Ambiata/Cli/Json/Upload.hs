@@ -8,6 +8,7 @@ module Ambiata.Cli.Json.Upload (
 ) where
 
 
+import           Ambiata.Cli.Data.Upload
 import           Ambiata.Cli.Json
 
 import           Data.Aeson

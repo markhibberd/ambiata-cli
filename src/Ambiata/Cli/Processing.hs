@@ -16,7 +16,6 @@ module Ambiata.Cli.Processing (
   ) where
 
 import           Ambiata.Cli.Data
-import           Ambiata.Cli.Json
 
 import           Control.Monad.IO.Class       (liftIO)
 import           Control.Monad.Reader         (local)

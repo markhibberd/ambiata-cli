@@ -5,7 +5,6 @@
 module Test.Ambiata.Cli.Arbitrary where
 
 import           Ambiata.Cli.Data
-import           Ambiata.Cli.Json
 
 import           Data.Time.Clock
 import           Data.Time.Clock.POSIX

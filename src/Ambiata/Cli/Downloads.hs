@@ -15,7 +15,6 @@ module Ambiata.Cli.Downloads (
   ) where
 
 import           Ambiata.Cli.Data
-import           Ambiata.Cli.Json
 
 import           Control.Monad.IO.Class     (liftIO)
 import           Control.Monad.Trans.Either

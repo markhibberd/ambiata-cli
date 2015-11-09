@@ -5,7 +5,6 @@ module Test.IO.Ambiata.Cli.Processing where
 
 import           Ambiata.Cli.Data
 import           Ambiata.Cli.Incoming
-import           Ambiata.Cli.Json
 import           Ambiata.Cli.Processing
 
 import           P
