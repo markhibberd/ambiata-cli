@@ -1,12 +1,9 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Ambiata.Cli.Json (
-    TemporaryAccess(..)
-  , TemporaryCreds(..)
-  , toAddress
+    toAddress
   , toAccess
   , toSecret
   , toToken'
@@ -19,7 +16,6 @@ import           Data.Aeson
 import           Data.Aeson.Types
 import           Data.Text.Encoding
 
-
 import           P
 
 import           Network.AWS.Data
@@ -27,27 +23,6 @@ import           Network.AWS.Data
 import           Mismi.S3
 import           Mismi.S3.Amazonka
 
-data TemporaryCreds =
-  TemporaryCreds {
-    tempKey      :: AccessKey,
-    tempSecret   :: SecretKey,
-    sessionToken :: SessionToken
-  } deriving (Eq, Show)
-
-data TemporaryAccess =
-  TemporaryAccess {
-    tempCreds :: TemporaryCreds,
-    s3Path    :: Address
-  } deriving (Eq, Show)
-
-
-
-
-instance Show SecretKey where
-  show (SecretKey bs)  = show bs
-
-instance Show SessionToken where
-  show (SessionToken bs) = show bs
 
 toAddress :: Value -> Parser Address
 toAddress (String s) =

@@ -78,6 +78,13 @@ library
                        Ambiata.Cli.Api.Download
                        Ambiata.Cli.Api.Upload
 
+                       Ambiata.Cli.Data.Api
+                       Ambiata.Cli.Data.Download
+                       Ambiata.Cli.Data.Env
+                       Ambiata.Cli.Data.File
+                       Ambiata.Cli.Data.Transfer
+                       Ambiata.Cli.Data.Upload
+
                        Ambiata.Cli.Json.Upload
 
 executable ambiata

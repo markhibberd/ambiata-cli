@@ -32,6 +32,7 @@ import qualified Data.Text                  as T
 import qualified Data.Text.IO               as TIO
 import           Data.Time.Clock
 import           Data.Time.Clock.POSIX
+import           Data.Time.Format (formatTime)
 
 import           Foreign.C.Types            (CTime (..))
 
@@ -41,6 +42,7 @@ import           System.Directory
 import           System.FilePath
 import           System.IO
 import           System.IO.Error
+import           System.Locale (defaultTimeLocale)
 import           System.Posix.Files
 
 import           Text.Printf
@@ -165,6 +167,10 @@ moveToProcessing dir f = do
                                                  </>
                                                  filename
   pure $ ProcessingFile (T.pack filename)
+
+processingPrefix :: UTCTime -> [Char]
+processingPrefix =
+  formatTime defaultTimeLocale "%H-%M-%S-"
 
 updateHashFile :: IncomingDir -> IncomingFile -> LatestHash ->  IO ()
 updateHashFile dir f (LatestHash hash) = do
