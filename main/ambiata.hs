@@ -1,7 +1,7 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE LambdaCase        #-}
-import           Ambiata.Cli           (uploadCommand)
-import           Ambiata.Cli.Env       (uploadEnv)
+import           Ambiata.Cli
+import           Ambiata.Cli.Env
 
 import           Options.Applicative
 
@@ -13,11 +13,16 @@ import           System.Log.Handler    (setFormatter)
 import           System.Log.Handler.Simple
 import           System.Log.Formatter
 
-data Command = Upload
+data Command =
+    Upload
+  | Download
   deriving (Eq, Show)
 
 cmd :: Parser Command
-cmd = subparser (command "upload" (info (pure Upload) ( fullDesc <> progDesc "Upload a dataset to Ambiata.")))
+cmd =
+      subparser (command "upload" (info (pure Upload) ( fullDesc <> progDesc "Upload a dataset to Ambiata.")))
+  -- FIX Remove 'internal' when download has been cleaned up
+  <|> subparser (command "download" (info (pure Download) ( fullDesc <> progDesc "Download datasets from Ambiata.")) <> internal)
 
 main :: IO ()
 main = do
@@ -29,6 +34,7 @@ main = do
 
   execParser (info (helper <*> cmd) (fullDesc <> mainDesc <> header "ambiata - Ambiata CLI")) >>= \case
     Upload -> uploadEnv >>= uploadCommand
+    Download -> downloadEnv >>= downloadCommand
   where mainDesc = progDesc "Run `ambiata COMMAND -h` for command-specific help."
 
         logFmt = simpleLogFormatter "$utcTime - $prio - $msg"

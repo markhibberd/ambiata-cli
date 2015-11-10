@@ -53,7 +53,7 @@ uploadCommand e@(UploadEnv d _ c) = runAction verb "upload" mode (unDir d </> ".
        logCtx                   = "Ambiata.uploadCommand"
 
 downloadCommand :: DownloadEnv -> IO ()
-downloadCommand e@(DownloadEnv d c) = runAction verb "download" mode (unDownloadDir d </> ".ambiata-download.lock") download'
+downloadCommand e@(DownloadEnv d _ _ c) = runAction verb "download" mode (unDownloadDir d </> ".ambiata-download.lock") download'
  where download'                    = doDownload e
                                         >>= liftIO . infoM (T.unpack logCtx) . T.unpack . renderDownloadResult
        mode                         = runMode c
@@ -81,10 +81,10 @@ runAction verb name m lockf act = do
         act' = orErrorAndDie logCtx renderClientError act
 
 doDownload ::  DownloadEnv -> EitherT AmbiataError IO DownloadResult
-doDownload (DownloadEnv dir c) = do
+doDownload (DownloadEnv dir o e c) = do
   creds <- bimapEitherT AmbiataApiError id
     . apiCall (apiKey c) (apiEndpoint c)
-    $ obtainCredentialsForDownload
+    $ obtainCredentialsForDownload o e
   downloadReady dir Sydney creds
 
 doUpload :: UploadEnv -> EitherT AmbiataError IO UploadResult

@@ -2,7 +2,10 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Ambiata.Cli.Data.Transfer (
     TemporaryCreds (..)
+  , Endpoint (..)
   ) where
+
+import           Data.Text (Text)
 
 import           Mismi.S3.Amazonka (AccessKey, SecretKey (..), SessionToken (..))
 
@@ -21,3 +24,8 @@ instance Show SecretKey where
 
 instance Show SessionToken where
   show (SessionToken bs) = show bs
+
+newtype Endpoint =
+  Endpoint {
+      unEndpoint :: Text
+    } deriving (Eq, Show)

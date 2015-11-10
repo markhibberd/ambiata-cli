@@ -7,7 +7,7 @@ module Ambiata.Cli.Api.Download (
 
 import           Ambiata.Cli.Data
 import           Ambiata.Cli.Http
-import qualified Ambiata.Cli.Json.Upload as JU
+import qualified Ambiata.Cli.Json.Download as JD
 import           Ambiata.Cli.Rest
 
 import           P
@@ -16,16 +16,15 @@ import           Network.HTTP.Client
 import           Network.HTTP.Types
 
 
--- FIXUP This API is incorrect, and isn't being used at the moment
-obtainCredentialsForDownload :: ApiRequest DownloadAccess
-obtainCredentialsForDownload =
+obtainCredentialsForDownload :: Organisation -> Endpoint -> ApiRequest DownloadAccess
+obtainCredentialsForDownload (Organisation o) (Endpoint e) =
   ApiRequest
     defaultRequest {
-      path = encodePathSegmentsBS ["download", "s3"]
-    , method = methodPost
+      path = encodePathSegmentsBS ["organisation", o, "download", "s3", e]
+    , method = methodGet
     }
     $ \resp -> \case
       Status 200 _ ->
-        DownloadAccess . JU.responseJsonV1 <$> decodeJson resp
+        JD.responseJsonV1 <$> decodeJson resp
       s ->
         Left $ BadResponse s

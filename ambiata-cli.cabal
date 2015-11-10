@@ -85,6 +85,7 @@ library
                        Ambiata.Cli.Data.Transfer
                        Ambiata.Cli.Data.Upload
 
+                       Ambiata.Cli.Json.Download
                        Ambiata.Cli.Json.Upload
 
 executable ambiata
@@ -118,6 +119,7 @@ test-suite test
                     , ambiata-disorder-core
                     , ambiata-disorder-corpus
                     , ambiata-mismi-core-test
+                    , ambiata-mismi-s3
                     , ambiata-mismi-s3-test
                     , ambiata-p
                     , directory
@@ -152,6 +154,7 @@ test-suite test-io
                     , ambiata-p
                     , ambiata-twine
                     , bytestring
+                    , containers                      == 0.5.*
                     , data-default                    == 0.5.*
                     , directory
                     , either

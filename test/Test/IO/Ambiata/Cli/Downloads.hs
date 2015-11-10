@@ -1,10 +1,14 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
+{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 module Test.IO.Ambiata.Cli.Downloads where
 
 import           Ambiata.Cli.Data
 import           Ambiata.Cli.Downloads
+
+import           Data.Map (Map)
+import qualified Data.Map as M
 
 import           P
 
@@ -16,8 +20,8 @@ import           System.IO
 
 import           Control.Monad.IO.Class     (liftIO)
 
-import           Data.String
-import           Data.Text                  (unpack)
+import           Data.Text (Text)
+import qualified Data.Text as T
 
 import           Mismi.S3 hiding ((</>))
 
@@ -25,52 +29,51 @@ import           Test.Ambiata.Cli.Arbitrary ()
 import           Test.Mismi.Amazonka
 
 
-prop_download :: String -> ServerFile -> Property
-prop_download junk f@(ServerFile name) = withLocalAWS $ \p a -> do
-  let local = p </> (unpack name)
-  liftIO $ writeFile local junk
-  uploadOrFail local $ withKey (`combineKey` Key name) a
-  fs <- serverFiles a
-  pure $ fs === [f]
+prop_to_download_missing local =
+  withDownload (M.singleton local "") $ \dir files -> do
+    ls <- downloadFiles dir files
+    liftIO . removeFile $ unDownloadDir dir </> (T.unpack . unLocalFile) local
+    ls' <- downloadFiles dir files
+    pure $ (ls, ls') === (DownloadResult [local], DownloadResult [local])
 
-prop_to_download :: String -> ServerFile -> Property
-prop_to_download junk f@(ServerFile name) = withLocalAWS $ \p a -> do
-  let dir = DownloadDir p
-  let local = p </> (unpack name)
-  liftIO $ writeFile local junk
-  uploadOrFail local $ withKey (`combineKey` Key name) a
-  ls <- filesToDownload dir a
-  liftIO $ removeFile local
-  ls' <- filesToDownload dir a
-  pure $ (ls, ls') === ([], [f])
+prop_download_files local =
+  withDownload local $ \dir files -> do
+    r1 <- downloadFiles dir files
+    c1 <- liftIO $ readFiles dir r1
+    r2 <- downloadFiles dir files
+    c2 <- liftIO $ readFiles dir r2
+    pure $ (c1, c2) === (local, M.empty)
 
-prop_download_files :: String -> ServerFile -> Property
-prop_download_files junk sf@(ServerFile name) = withLocalAWS $ \dir' address -> do
-  let dir = DownloadDir dir'
-
-  -- add a file to remote store
-  let local = dir' </> (unpack name)
-  liftIO $ writeFile local junk
-  uploadOrFail local $ withKey (`combineKey` Key name) address
-
-  -- should be nothing locally
-  liftIO $ removeFile local
-  fileGone <- isFileMissing dir sf
-
-  -- fetch whatever is from the remote address
-  res <- downloadFiles dir address
-  c <- liftIO $ readFile local
-
-  pure $ (res, c, fileGone) === (DownloadResult [LocalFile name], junk, True)
+prop_download_files_more l1 l2' =
+  withLocalAWS $ \dir' address -> do
+    let dir = DownloadDir dir'
+    let l2 = M.difference l2' l1
+    f1 <- writeFiles address l1
+    r1 <- downloadFiles dir f1
+    c1 <- liftIO $ readFiles dir r1
+    f2 <- writeFiles address l2
+    r2 <- downloadFiles dir f2
+    c2 <- liftIO $ readFiles dir r2
+    pure $ (c1, c2) === (l1, l2)
 
 
-prop_download_nothing :: ServerFile -> Property
-prop_download_nothing (ServerFile name) = withLocalAWS $ \dir' address -> do
-  let dir = DownloadDir dir'
-  let address' = withKey (`combineKey` Key name) address
-  res <- downloadFiles dir address'
-  pure $ res === (DownloadResult [])
+withDownload :: Testable a => Map LocalFile Text -> (DownloadDir -> [ServerFile] -> AWS a) -> Property
+withDownload files f =
+  withLocalAWS $ \dir' address -> do
+    sfiles <- writeFiles address files
+    f (DownloadDir dir') sfiles
 
+writeFiles :: Address -> Map LocalFile Text -> AWS [ServerFile]
+writeFiles address files =
+  for (M.toList files) $ \(LocalFile name, junk) -> do
+    let a = withKey (`combineKey` Key name) address
+    writeOrFail a junk
+    createServerFileOrFail a
+
+readFiles :: DownloadDir -> DownloadResult -> IO (Map LocalFile Text)
+readFiles (DownloadDir dir) (DownloadResult res) =
+  fmap M.fromList . for res $ \f ->
+    fmap ((,) f . T.pack) . readFile . (dir </>) . T.unpack . unLocalFile $ f
 
 
 return []

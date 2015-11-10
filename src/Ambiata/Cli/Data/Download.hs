@@ -6,16 +6,23 @@ module Ambiata.Cli.Data.Download (
   , DownloadResult (..)
   , DownloadAccess (..)
   , DownloadEnv (..)
-  , ServerFile (..)
+  , ServerFile
   , renderDownloadResult
+  , unServerFile
+  , createServerFile
+  , createServerFileOrFail
+  , serverFilePath
   ) where
 
+import           Ambiata.Cli.Data.Api
 import           Ambiata.Cli.Data.Env
 import           Ambiata.Cli.Data.File
 import           Ambiata.Cli.Data.Transfer as X
-import           Ambiata.Cli.Data.Upload
 
 import           Data.Text (Text)
+import qualified Data.Text as T
+
+import           Mismi.S3 (Address, addressToText, basename, key)
 
 import           P
 
@@ -29,17 +36,41 @@ newtype DownloadDir = DownloadDir {
 newtype DownloadResult = DownloadResult { unDownloadResult :: [LocalFile] }
   deriving (Show, Eq, Ord)
 
-newtype DownloadAccess = DownloadAccess { unDownloadAccess :: TemporaryAccess }
-  deriving (Eq, Show)
+data DownloadAccess =
+  DownloadAccess {
+      downloadTemporaryCred :: TemporaryCreds
+    , downloadPaths :: [ServerFile]
+    } deriving (Eq, Show)
 
 data DownloadEnv =
-  DownloadEnv DownloadDir CommonEnv deriving (Show)
+  DownloadEnv DownloadDir Organisation Endpoint CommonEnv deriving (Show)
 
+-- |
+-- Represents a file to be downloaded from the API.
+-- Cannot be "prefix" address (eg. s3://bucket/).
+-- Use 'createServerFile' as the constructor.
+--
 newtype ServerFile = ServerFile {
-  unServerFile :: Text
+  _unServerFile :: Address
 } deriving (Show, Eq, Ord)
 
 
 renderDownloadResult :: DownloadResult -> Text
 renderDownloadResult (DownloadResult fs) =
   "Downloaded files: " <> renderFileList (unLocalFile <$> fs)
+
+unServerFile :: ServerFile -> Address
+unServerFile =
+  _unServerFile
+
+createServerFile :: Address -> Maybe ServerFile
+createServerFile a =
+  fmap (const (ServerFile a)) . basename . key $ a
+
+createServerFileOrFail :: Monad m => Address -> m ServerFile
+createServerFileOrFail a =
+  maybe (fail . T.unpack $ "Invalid ServerFile: " <> addressToText a) return . createServerFile $ a
+
+serverFilePath :: ServerFile -> FilePath
+serverFilePath =
+  maybe "" T.unpack . basename . key . unServerFile
