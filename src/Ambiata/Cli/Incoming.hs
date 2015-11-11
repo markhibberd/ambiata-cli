@@ -32,7 +32,6 @@ import qualified Data.Text                  as T
 import qualified Data.Text.IO               as TIO
 import           Data.Time.Clock
 import           Data.Time.Clock.POSIX
-import           Data.Time.Format (formatTime)
 
 import           Foreign.C.Types            (CTime (..))
 
@@ -42,7 +41,6 @@ import           System.Directory
 import           System.FilePath
 import           System.IO
 import           System.IO.Error
-import           System.Locale (defaultTimeLocale)
 import           System.Posix.Files
 
 import           Text.Printf
@@ -159,18 +157,12 @@ isFileReady dir f (NoChangeAfter noChangeAfter) = do
 
 moveToProcessing :: IncomingDir -> IncomingFile -> IO ProcessingFile
 moveToProcessing dir f = do
-  now <- getCurrentTime
   ignoreNoFile $ removeFile $ hashFileOf dir f
-  let timePrefix = processingPrefix now
-  let filename = timePrefix <> (T.unpack $ unIncomingFile f)
+  let filename = unIncomingFile f
   ignoreNoFile $ renameFile (toFilePath dir f) $ (toWorkingPath dir Processing)
                                                  </>
-                                                 filename
-  pure $ ProcessingFile (T.pack filename)
-
-processingPrefix :: UTCTime -> [Char]
-processingPrefix =
-  formatTime defaultTimeLocale "%H-%M-%S-"
+                                                 T.unpack filename
+  pure $ ProcessingFile filename
 
 updateHashFile :: IncomingDir -> IncomingFile -> LatestHash ->  IO ()
 updateHashFile dir f (LatestHash hash) = do
