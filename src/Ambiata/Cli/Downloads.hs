@@ -7,8 +7,7 @@
 --
 
 module Ambiata.Cli.Downloads (
-    serverFiles
-  , filesToDownload
+    filesToDownload
   , downloadFiles
   , downloadReady
   , isFileMissing
@@ -34,46 +33,35 @@ import           System.IO
 -- Do the download with the given credentials
 --
 downloadReady :: DownloadDir -> Region -> DownloadAccess -> EitherT AmbiataError IO DownloadResult
-downloadReady dir r (DownloadAccess (TemporaryAccess (TemporaryCreds k s sess) a)) = do
+downloadReady dir r (DownloadAccess (TemporaryCreds k s sess) a) = do
   env <- setDebugging <$> getDebugging <*> newEnvFromCreds r k s (Just sess)
   bimapEitherT AmbiataAWSDownloadError id . runAWS env $ downloadFiles dir a
 
 -- |
 -- Download any files from the remote dir that are not existing locally.
 --
-downloadFiles :: DownloadDir -> Address -> AWS DownloadResult
+downloadFiles :: DownloadDir -> [ServerFile] -> AWS DownloadResult
 downloadFiles dir a = do
-  toDo <- filesToDownload dir withTrailingSlash
-  fmap DownloadResult $ mapM (doDownload dir a) toDo
-  where
-    -- NOTE: required due to: https://github.com/ambiata/mismi/issues/158
-    -- can remove this when issue is resolved. combineKey ensures trailing for now.
-    withTrailingSlash = withKey (`combineKey` Key "") a
+  toDo <- liftIO $ filesToDownload dir a
+  fmap DownloadResult $ mapM (doDownload dir) toDo
 
-doDownload :: DownloadDir -> Address -> ServerFile -> AWS LocalFile
-doDownload dir a (ServerFile name) = do
-  download (withKey (`combineKey` Key name) a) localFile
-  pure . LocalFile $ name
-  where
-    localFile = (unDownloadDir dir) </> T.unpack name
+doDownload :: DownloadDir -> ServerFile -> AWS LocalFile
+doDownload dir a = do
+  let fp = serverFilePath a
+  liftIO $ putStrLn $ "Downloading " <> fp
+  -- NOTE: This will download to a temporary file and then atomically rename once complete
+  download (unServerFile a) (unDownloadDir dir </> fp)
+  liftIO $ putStrLn $ "Downloading " <> fp <> " [complete]"
+  pure . LocalFile . T.pack $ fp
 
 -- |
 -- What files should be downloaded
 --
-filesToDownload :: DownloadDir -> Address -> AWS [ServerFile]
-filesToDownload d a = do
-  ls <- serverFiles a
-  filterM (isFileMissing d) ls
+filesToDownload :: DownloadDir -> [ServerFile] -> IO [ServerFile]
+filesToDownload d a =
+  filterM (isFileMissing d) a
 
-isFileMissing :: DownloadDir -> ServerFile -> AWS Bool
-isFileMissing (DownloadDir d) (ServerFile f) = do
-  exists' <- liftIO . doesFileExist $ d </> T.unpack f
+isFileMissing :: DownloadDir -> ServerFile -> IO Bool
+isFileMissing (DownloadDir d) f = do
+  exists' <- doesFileExist $ d </> serverFilePath f
   pure . not $ exists'
-
--- |
--- See what is up on the server we may want to pull down
---
-serverFiles :: Address -> AWS [ServerFile]
-serverFiles a = do
-  ls <- listRecursively a
-  pure $ ServerFile . unKey <$> catMaybes (removeCommonPrefix a <$> ls)

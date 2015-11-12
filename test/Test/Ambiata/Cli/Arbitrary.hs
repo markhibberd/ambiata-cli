@@ -9,6 +9,7 @@ import           Ambiata.Cli.Data
 import           Data.Time.Clock
 import           Data.Time.Clock.POSIX
 
+import           Mismi.S3 (Key (..), combineKey, withKey)
 
 import           Test.QuickCheck
 import           Test.QuickCheck.Instances ()
@@ -54,11 +55,26 @@ instance Arbitrary TemporaryAccess where
   arbitrary = TemporaryAccess <$> arbitrary
                                <*> arbitrary
 
+instance Arbitrary DownloadAccess where
+  arbitrary =
+    DownloadAccess
+      <$> arbitrary
+      <*> arbitrary
+
 instance Arbitrary TemporaryCreds where
   arbitrary = TemporaryCreds <$> arbitrary <*> arbitrary <*> arbitrary
 
 instance Arbitrary AmbiataAPIKey where
   arbitrary = AmbiataAPIKey <$> elements muppets
 
+instance Arbitrary LocalFile where
+  arbitrary =
+    LocalFile
+      <$> elements weather
+
 instance Arbitrary ServerFile where
-  arbitrary = ServerFile <$> elements cooking
+  arbitrary =
+    createServerFileOrFail =<<
+      (\a k -> withKey (flip combineKey k) a)
+        <$> arbitrary
+        <*> (Key . unLocalFile <$> arbitrary)

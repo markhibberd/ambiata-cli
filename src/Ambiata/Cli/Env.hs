@@ -13,6 +13,7 @@ module Ambiata.Cli.Env (
 import           Ambiata.Cli.Data
 
 import           Data.Maybe
+import           Data.Text (Text)
 import qualified Data.Text           as T
 
 import           Env
@@ -39,8 +40,12 @@ downloadEnv :: IO DownloadEnv
 downloadEnv = parse (header "ambiata-download") downloadEnv'
 
 downloadEnv' :: Parser DownloadEnv
-downloadEnv' = DownloadEnv <$> var outgoingdir "DOWNLOAD_DIR" (help "Directory to download to.")
-                           <*> common
+downloadEnv' =
+  DownloadEnv
+    <$> var outgoingdir "DOWNLOAD_DIR" (help "Directory to download to.")
+    <*> var (fmap Organisation <$> nonemptyStr) "ORGANISATION_ID" (help "Organisation ID")
+    <*> var (fmap Endpoint <$> nonemptyStr)  "ENDPOINT_ID" (help "Endpoint ID to download from")
+    <*> common
 
 common :: Parser CommonEnv
 common =
@@ -58,6 +63,9 @@ incomingdir = str >=> nonempty >=> (Right . IncomingDir)
 
 outgoingdir :: Reader DownloadDir
 outgoingdir = str >=> nonempty >=> (Right . DownloadDir)
+
+nonemptyStr :: Reader Text
+nonemptyStr = str >=> nonempty
 
 endpoint :: Reader AmbiataAPIEndpoint
 endpoint = (fmap . fmap) (AmbiataAPIEndpoint . T.pack) $ (nonempty >=> str)

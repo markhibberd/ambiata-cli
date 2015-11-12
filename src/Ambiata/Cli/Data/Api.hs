@@ -3,6 +3,7 @@
 module Ambiata.Cli.Data.Api (
     AmbiataAPIKey (..)
   , AmbiataAPIEndpoint (..)
+  , Organisation (..)
   , ApiError (..)
   , renderApiError
   , tokenHeader
@@ -25,6 +26,11 @@ newtype AmbiataAPIKey = AmbiataAPIKey {
 newtype AmbiataAPIEndpoint = AmbiataAPIEndpoint {
     unAmbEndpoint :: Text
   } deriving (Show)
+
+newtype Organisation =
+  Organisation {
+      unOrganisation :: Text
+    } deriving (Eq, Show)
 
 data ApiError =
     BadResponse Status
