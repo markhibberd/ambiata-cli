@@ -3,7 +3,7 @@ title: Downloading data from Ambiata
 version: 1.0
 ---
 
-You can use the `ambiata download` command to transfer data securely from
+You can use the `ambiata-daemon download` command to transfer data securely from
 Ambiata via a download from Amazon S3.
 
 # Required variables

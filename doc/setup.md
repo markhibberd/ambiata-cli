@@ -13,7 +13,7 @@ in the `ap-southeast-2` region is required. Inbound access is not required.
 
 ## Server
 
-The `ambiata` command is distributed as a binary which should run on
+The `ambiata-daemon` command is distributed as a binary which should run on
 any modern x86-64 based Linux system.
 
 The command runs as a long-lived daemon process. It is strongly
@@ -27,7 +27,7 @@ facility (e.g., `journald` or `syslog`).
 
 # Configuration
 
-The `ambiata` command is configured using environment
+The `ambiata-daemon` command is configured using environment
 variables; these can be set either by the process supervisor or via a
 "run script" which configures and runs the command. Example
 configuration files for some process managers and a sample "run

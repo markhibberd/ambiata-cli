@@ -3,7 +3,7 @@ title: Uploading data to Ambiata
 version: 1.0
 ---
 
-You can use the `ambiata upload` command to transfer data securely to
+You can use the `ambiata-daemon upload` command to transfer data securely to
 Ambiata via an upload to Amazon S3.
 
 # Requirements
@@ -13,7 +13,7 @@ Ambiata via an upload to Amazon S3.
  - `UPLOAD_DIR`. This is the directory which will contain the files
    to be uploaded. It must be an absolute path (starts with a `/`).
    It is recommended that it is owned by same the user that
-   `ambiata upload` process will run as. The process will require
+   `ambiata-daemon upload` process will run as. The process will require
    read, write and execute permission for the directory.
 
 ## Optional variables
