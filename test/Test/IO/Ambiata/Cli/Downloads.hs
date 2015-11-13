@@ -14,7 +14,6 @@ import           P
 
 import           Test.QuickCheck
 
-import           System.Directory
 import           System.FilePath            ((</>))
 import           System.IO
 
@@ -31,16 +30,15 @@ import           Test.Mismi.Amazonka
 
 prop_to_download_missing local =
   withDownload (M.singleton local "") $ \dir files -> do
-    ls <- downloadFiles dir files
-    liftIO . removeFile $ unDownloadDir dir </> (T.unpack . unLocalFile) local
-    ls' <- downloadFiles dir files
-    pure $ (ls, ls') === (DownloadResult [local], DownloadResult [local])
+    ls <- runOrFail $ downloadFiles dir files
+    ls' <- runOrFail $ downloadFiles dir files
+    pure $ (ls, ls') === (DownloadResult [local], DownloadResult [])
 
 prop_download_files local =
   withDownload local $ \dir files -> do
-    r1 <- downloadFiles dir files
+    r1 <- runOrFail $ downloadFiles dir files
     c1 <- liftIO $ readFiles dir r1
-    r2 <- downloadFiles dir files
+    r2 <- runOrFail $ downloadFiles dir files
     c2 <- liftIO $ readFiles dir r2
     pure $ (c1, c2) === (local, M.empty)
 
@@ -49,12 +47,34 @@ prop_download_files_more l1 l2' =
     let dir = DownloadDir dir'
     let l2 = M.difference l2' l1
     f1 <- writeFiles address l1
-    r1 <- downloadFiles dir f1
+    r1 <- runOrFail $ downloadFiles dir f1
     c1 <- liftIO $ readFiles dir r1
     f2 <- writeFiles address l2
-    r2 <- downloadFiles dir f2
+    r2 <- runOrFail $ downloadFiles dir f2
     c2 <- liftIO $ readFiles dir r2
     pure $ (c1, c2) === (l1, l2)
+
+prop_download_fail_missing l1 l2 =
+  M.size l2 > 0 ==>
+  withLocalAWS $ \dir address -> do
+    _ <- writeFiles address $ M.difference l1 l2
+    r <- downloadFiles (DownloadDir dir)
+      . (=<<) createServerFileOrFail . fmap (\(LocalFile name) -> withKey (flip combineKey (Key name)) address)
+      $ M.keys l2
+    pure $ case r of
+      Left (ServerFileDoesNotExist e) ->
+        counterexample (show e) True
+      Right _ ->
+        counterexample "Should not be able to download missing files" False
+
+prop_download_fail_exists local =
+  withDownload local $ \dir files -> do
+    r1 <- runOrFail $ downloadFiles dir files
+    _ <- liftIO $ readFiles dir r1
+    _ <- liftIO $ removeOldMarkers dir []
+    r2 <- runOrFail $ downloadFiles dir files
+    c <- liftIO $ readFiles dir r2
+    pure $ c === local
 
 
 withDownload :: Testable a => Map LocalFile Text -> (DownloadDir -> [ServerFile] -> AWS a) -> Property
@@ -75,6 +95,9 @@ readFiles (DownloadDir dir) (DownloadResult res) =
   fmap M.fromList . for res $ \f ->
     fmap ((,) f . T.pack) . readFile . (dir </>) . T.unpack . unLocalFile $ f
 
+runOrFail :: (Monad m, Show l) => m (Either l a) -> m a
+runOrFail =
+  (=<<) (either (fail . show) return)
 
 return []
 tests :: IO Bool

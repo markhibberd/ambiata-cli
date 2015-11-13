@@ -7,15 +7,22 @@
 --
 
 module Ambiata.Cli.Downloads (
-    filesToDownload
+    DownloadError (..)
+  , filesToDownload
   , downloadFiles
   , downloadReady
+  , removeOldMarkers
   , isFileMissing
+  , markerDir
+  , markerFile
   ) where
 
 import           Ambiata.Cli.Data
+import           Ambiata.Cli.Files
 
-import           Control.Monad.IO.Class     (liftIO)
+import           Control.Monad.Catch (handle, throwM)
+import           Control.Monad.IO.Class (liftIO)
+import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Either
 
 import qualified Data.Text                  as T
@@ -29,28 +36,55 @@ import           System.Directory
 import           System.FilePath
 import           System.IO
 
+{-
+The layout of the DOWNLOAD_DIR looks like the following:
+
+  DOWNLOAD_DIR/
+    .marker/
+      file1
+      file2
+    file2
+
+Marker files are created when files are downloaded, to ensure they don't
+need to be downloaded again.
+
+This allows for users to manage the list of downloaded files separately without
+impacting the behaviour of this program.
+-}
+
+
 -- |
 -- Do the download with the given credentials
 --
 downloadReady :: DownloadDir -> Region -> DownloadAccess -> EitherT AmbiataError IO DownloadResult
 downloadReady dir r (DownloadAccess (TemporaryCreds k s sess) a) = do
   env <- setDebugging <$> getDebugging <*> newEnvFromCreds r k s (Just sess)
-  bimapEitherT AmbiataAWSDownloadError id . runAWS env $ downloadFiles dir a
+  runAWST env AmbiataAWSDownloadError
+    . bimapEitherT AmbiataDownloadError id . EitherT
+    $ downloadFiles dir a
 
 -- |
 -- Download any files from the remote dir that are not existing locally.
 --
-downloadFiles :: DownloadDir -> [ServerFile] -> AWS DownloadResult
+downloadFiles :: DownloadDir -> [ServerFile] -> AWS (Either DownloadError DownloadResult)
 downloadFiles dir a = do
+  liftIO $ createDirectoryIfMissing True (markerDir dir)
+  void . liftIO $ removeOldMarkers dir a
   toDo <- liftIO $ filesToDownload dir a
-  fmap DownloadResult $ mapM (doDownload dir) toDo
+  runEitherT . fmap DownloadResult $ mapM (EitherT . doDownload dir) toDo
 
-doDownload :: DownloadDir -> ServerFile -> AWS LocalFile
-doDownload dir a = do
+doDownload :: DownloadDir -> ServerFile -> AWS (Either DownloadError LocalFile)
+doDownload dir a = runEitherT $ do
   let fp = serverFilePath a
   liftIO $ putStrLn $ "Downloading " <> fp
   -- NOTE: This will download to a temporary file and then atomically rename once complete
-  download (unServerFile a) (unDownloadDir dir </> fp)
+  handle (\e -> case e of
+      SourceMissing _ _ -> left $ ServerFileDoesNotExist a
+      e' -> throwM e'
+    )
+    . lift $ downloadWithMode Overwrite (unServerFile a) (unDownloadDir dir </> fp)
+  -- Only after the file is finished create a marker
+  liftIO $ createMarkerFile dir a
   liftIO $ putStrLn $ "Downloading " <> fp <> " [complete]"
   pure . LocalFile . T.pack $ fp
 
@@ -58,10 +92,36 @@ doDownload dir a = do
 -- What files should be downloaded
 --
 filesToDownload :: DownloadDir -> [ServerFile] -> IO [ServerFile]
-filesToDownload d a =
-  filterM (isFileMissing d) a
+filesToDownload d =
+  filterM (isFileMissing d)
 
 isFileMissing :: DownloadDir -> ServerFile -> IO Bool
-isFileMissing (DownloadDir d) f = do
-  exists' <- doesFileExist $ d </> serverFilePath f
-  pure . not $ exists'
+isFileMissing d f =
+  fmap not . doesFileExist $ markerFile d f
+
+-- |
+-- Remove any markers no longer contained in the list of server files.
+-- NOTE: This assumes that the list of files is complete and not paged.
+--
+removeOldMarkers :: DownloadDir -> [ServerFile] -> IO [LocalFile]
+removeOldMarkers d a = do
+  let names = fmap serverFilePath a
+  let ignoreSystem = not . flip elem [".", ".."]
+  getDirectoryContents (markerDir d) >>= \x -> fmap concat . for (filter ignoreSystem x) $ \f -> do
+    if not $ elem (takeFileName f) names
+      then
+        ignoreNoFile (removeFile ((markerDir d) </> f)) >> (pure . pure . LocalFile . T.pack) f
+      else pure []
+
+
+markerDir :: DownloadDir -> FilePath
+markerDir (DownloadDir d) =
+  d </> ".marker"
+
+markerFile :: DownloadDir -> ServerFile -> FilePath
+markerFile d f =
+  markerDir d </> serverFilePath f
+
+createMarkerFile :: DownloadDir -> ServerFile -> IO ()
+createMarkerFile dir a =
+  writeFile (markerFile dir a) ""
