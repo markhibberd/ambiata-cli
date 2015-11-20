@@ -22,7 +22,7 @@ cmd :: Parser Command
 cmd =
       subparser (command "upload" (info (pure Upload) ( fullDesc <> progDesc "Upload a dataset to Ambiata.")))
   -- FIX Remove 'internal' when download has been cleaned up
-  <|> subparser (command "download" (info (pure Download) ( fullDesc <> progDesc "Download datasets from Ambiata.")) <> internal)
+  <|> subparser (command "download" (info (pure Download) ( fullDesc <> progDesc "Download datasets from Ambiata.")))
 
 main :: IO ()
 main = do

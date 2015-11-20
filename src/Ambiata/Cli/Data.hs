@@ -24,6 +24,7 @@ data AmbiataError =
   | AmbiataAWSUploadError Error
   | AmbiataAWSDownloadError Error
   | AmbiataFilesystemError FilesystemError
+  | AmbiataDownloadError DownloadError
 
 renderClientError :: AmbiataError -> Text
 renderClientError ae =
@@ -36,3 +37,5 @@ renderClientError ae =
       "An error occured whilst downloading with the AWS API: " <> renderError a
     AmbiataFilesystemError e ->
       renderFilesystemError e
+    AmbiataDownloadError e ->
+      "An error occured whilst downloading: " <> renderDownloadError e

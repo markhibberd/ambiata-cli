@@ -7,11 +7,13 @@ module Ambiata.Cli.Data.Download (
   , DownloadAccess (..)
   , DownloadEnv (..)
   , ServerFile
+  , DownloadError (..)
   , renderDownloadResult
   , unServerFile
   , createServerFile
   , createServerFileOrFail
   , serverFilePath
+  , renderDownloadError
   ) where
 
 import           Ambiata.Cli.Data.Api
@@ -54,6 +56,10 @@ newtype ServerFile = ServerFile {
   _unServerFile :: Address
 } deriving (Show, Eq, Ord)
 
+data DownloadError =
+    ServerFileDoesNotExist ServerFile
+  deriving (Show)
+
 
 renderDownloadResult :: DownloadResult -> Text
 renderDownloadResult (DownloadResult fs) =
@@ -74,3 +80,9 @@ createServerFileOrFail a =
 serverFilePath :: ServerFile -> FilePath
 serverFilePath =
   maybe "" T.unpack . basename . key . unServerFile
+
+renderDownloadError :: DownloadError -> Text
+renderDownloadError ae =
+  case ae of
+    ServerFileDoesNotExist (ServerFile a) ->
+      "File to download does not exist: " <> addressToText a
