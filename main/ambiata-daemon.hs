@@ -32,7 +32,7 @@ main = do
             pure $ setFormatter h logFmt
   updateGlobalLogger rootLoggerName (setHandlers [logh])
 
-  execParser (info (helper <*> cmd) (fullDesc <> mainDesc <> header "ambiata - Ambiata CLI")) >>= \case
+  execParser (info (helper <*> cmd) (fullDesc <> mainDesc <> header "ambiata-daemon - Ambiata CLI Daemon")) >>= \case
     Upload -> uploadEnv >>= uploadCommand
     Download -> downloadEnv >>= downloadCommand
   where mainDesc = progDesc "Run `ambiata COMMAND -h` for command-specific help."

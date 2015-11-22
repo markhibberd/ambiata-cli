@@ -12,4 +12,4 @@ main =
     Test.Cli.Ambiata.Cli.Linking.tests
   ]
   where
-    exe = "./dist/build/ambiata/ambiata"
+    exe = "./dist/build/ambiata-daemon/ambiata-daemon"

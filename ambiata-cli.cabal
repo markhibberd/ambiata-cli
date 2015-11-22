@@ -88,13 +88,13 @@ library
                        Ambiata.Cli.Json.Download
                        Ambiata.Cli.Json.Upload
 
-executable ambiata
+executable ambiata-daemon
   if flag(staticgmp)
     ghc-options:       -Wall -threaded -O2 -pgml gcc-with-gmp.sh
   else
     ghc-options:       -Wall -threaded -O2
 
-  main-is:           main/ambiata.hs
+  main-is:           main/ambiata-daemon.hs
   build-depends:     base                             >= 3          && < 5
                    , hslogger
                    , ambiata-p

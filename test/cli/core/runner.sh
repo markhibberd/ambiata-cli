@@ -1,6 +1,6 @@
 #!/bin/sh -eu
 
-AMBIATA_CLI="${1:-./dist/build/ambiata/ambiata}"
+AMBIATA_CLI="${1:-./dist/build/ambiata-daemon/ambiata-daemon}"
 RUNDIR=$(mktemp  -p /tmp -d "ambiata-cli-XXXXXX")
 
 for f in $AMBIATA_CLI; do
