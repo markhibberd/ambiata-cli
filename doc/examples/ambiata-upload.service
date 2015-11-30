@@ -11,7 +11,7 @@ After=network.target
 [Service]
 Type=simple
 Restart=on-failure
-ExecStart=/opt/ambiata/bin/ambiata upload
+ExecStart=/opt/ambiata/bin/ambiata-daemon upload
 
 # Replace these values with the relevant ones for your organisation.
 Environment="AMBIATA_API_KEY=6a7c5f66-d2d3-4b86-96ed-1770c1abb942"

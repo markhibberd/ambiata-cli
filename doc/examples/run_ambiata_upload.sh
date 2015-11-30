@@ -12,4 +12,4 @@ export UPLOAD_DIR=/home/upload/data/
 # Use an HTTP proxy which requires authentication.
 export https_proxy=http://username:password@proxy.localdomain:3128
 
-exec /opt/ambiata/bin/ambiata upload
+exec /opt/ambiata/bin/ambiata-daemon upload
