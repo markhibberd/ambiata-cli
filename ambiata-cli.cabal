@@ -104,6 +104,8 @@ executable ambiata-daemon
                    , ambiata-p
                    , ambiata-cli
                    , optparse-applicative
+                   , ambiata-x-optparse
+                   , text                            == 1.2.1.*
 
 test-suite test
   type:                exitcode-stdio-1.0
