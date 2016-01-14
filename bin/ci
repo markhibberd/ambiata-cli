@@ -2,4 +2,4 @@
 
 $(dirname $0)/ci.common
 $(dirname $0)/publish-docs
-$(dirname $0)/publish "ambiata-download"
+$(dirname $0)/publish ${AMBIATA_DOWNLOAD}
