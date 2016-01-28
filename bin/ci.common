@@ -11,8 +11,8 @@ git submodule init
 git submodule sync
 git submodule update
 
-./cabal update
-./cabal build
-./cabal test --log=/dev/stdout
+./mafia update
+./mafia build ${CABAL_CONFIG_ARGS}
+./mafia testci ${CABAL_CONFIG_ARGS}
 
 cd doc && make ; cd ..
