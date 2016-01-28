@@ -6,7 +6,7 @@ REGION="ap-southeast-2"
 APPLICATION="ambiata"
 EXES="ambiata-daemon"
 
-version=$(cat $(dirname $0)/../dist/build/autogen/version.txt)
+version=$(cat $(dirname $0)/../gen/version.txt)
 tarball="dist/${APPLICATION}-${version}-x86_64-linux.tar.gz"
 
 for e in $EXES
