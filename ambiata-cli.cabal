@@ -98,7 +98,11 @@ executable ambiata-daemon
   else
     ghc-options:       -Wall -threaded -O2
 
-  main-is:           main/ambiata-daemon.hs
+  hs-source-dirs:
+                       gen
+  main-is:
+                       ../main/ambiata-daemon.hs
+
   build-depends:     base                             >= 3          && < 5
                    , hslogger
                    , ambiata-p
