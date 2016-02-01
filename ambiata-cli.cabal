@@ -47,7 +47,7 @@ library
                      -- FIX Remove when mismi is upgraded
                      -- https://github.com/ambiata/mismi/pull/274
                      , ini                             == 0.3.3
-                     , lens                            >= 4.8       && <= 4.10
+                     , lens                            >= 4.8       && < 4.10
                      , mtl                             == 2.2.*
                      , network-uri                     == 2.6.*
                      , retry                           == 0.6.*
@@ -108,6 +108,8 @@ executable ambiata-daemon
                    , ambiata-p
                    , ambiata-cli
                    , optparse-applicative
+                   , ambiata-x-optparse
+                   , text                            == 1.2.1.*
 
 test-suite test
   type:                exitcode-stdio-1.0

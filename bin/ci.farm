@@ -1,0 +1,15 @@
+#!/bin/sh -exu
+
+if test ! -e farm; then
+    git clone git@github.com:ambiata/farm.git
+else
+    (cd farm && git fetch && git reset --hard @{u}) || exit $?
+fi
+
+export FARM_TATOOINE_DIR=$(pwd)
+export FARM_DB_SCHEMA_PREFIX="farm_ambiata_cli"
+export FARM_ROOT_PORT=10280
+
+cd farm
+
+./bin/ci.smoke-local
