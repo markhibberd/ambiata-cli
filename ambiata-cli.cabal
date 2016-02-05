@@ -56,6 +56,8 @@ library
                      , time                            == 1.4.*
                      , transformers                    >= 0.3        && < 0.5
                      , unix                            == 2.7.*
+                     -- Lock down psqueues due to incompatibility
+                     , psqueues                        == 0.2.0.3
 
 
 
