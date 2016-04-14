@@ -3,7 +3,7 @@
 OUTFILE="$1"
 
 APPLICATION="ambiata"
-EXES="ambiata-daemon"
+EXES="ambiata-daemon ambiata"
 
 tmpdir=$(mktemp -d /tmp/ambiata-cli-distXXXXXX)
 

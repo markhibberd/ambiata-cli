@@ -5,8 +5,6 @@ module Ambiata.Cli.Data.Transfer (
   , Endpoint (..)
   ) where
 
-import           Data.Text (Text)
-
 import           Mismi.S3.Amazonka (AccessKey, SecretKey (..), SessionToken (..))
 
 import           P

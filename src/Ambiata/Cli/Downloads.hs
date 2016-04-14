@@ -23,18 +23,19 @@ import           Ambiata.Cli.Files
 import           Control.Monad.Catch (handle, throwM)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Trans.Class (lift)
-import           Control.Monad.Trans.Either
 
 import qualified Data.Text                  as T
 
 import           Mismi
-import           Mismi.S3 hiding ((</>))
+import           Mismi.S3 hiding (DownloadError)
 
 import           P
 
 import           System.Directory
 import           System.FilePath
 import           System.IO
+
+import           X.Control.Monad.Trans.Either
 
 {-
 The layout of the DOWNLOAD_DIR looks like the following:
@@ -82,7 +83,7 @@ doDownload dir a = runEitherT $ do
       SourceMissing _ _ -> left $ ServerFileDoesNotExist a
       e' -> throwM e'
     )
-    . lift $ downloadWithMode Overwrite (unServerFile a) (unDownloadDir dir </> fp)
+    . lift $ downloadWithModeOrFail Overwrite (unServerFile a) (unDownloadDir dir </> fp)
   -- Only after the file is finished create a marker
   liftIO $ createMarkerFile dir a
   liftIO $ putStrLn $ "Downloading " <> fp <> " [complete]"

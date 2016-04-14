@@ -9,7 +9,6 @@ module Ambiata.Cli.Data.Api (
   , tokenHeader
   ) where
 
-import           Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 

@@ -30,7 +30,6 @@ import           Ambiata.Cli.Data.Env
 import           Ambiata.Cli.Data.File
 import           Ambiata.Cli.Data.Transfer as X
 
-import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.Time (UTCTime, formatTime)
 

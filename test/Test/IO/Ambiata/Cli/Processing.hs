@@ -17,34 +17,35 @@ import           System.IO
 import           System.IO.Temp
 
 import           Control.Monad.IO.Class     (liftIO)
-import           Control.Monad.Trans.Either
 
 import           Data.List                  (nub, sort)
 import           Data.String
-import           Data.Text                  (Text, unpack)
+import           Data.Text                  (unpack)
 
 import           Disorder.Core.IO
 
 import           Mismi
-import           Mismi.S3 hiding ((</>))
+import           Mismi.S3
 
 import           Test.Ambiata.Cli.Arbitrary ()
 import           Test.IO.Ambiata.Cli.Util
 
-import           Test.Mismi.Amazonka
+import qualified Test.Mismi.S3 as S3
 import           Test.Mismi.S3
+
+import           X.Control.Monad.Trans.Either
 
 
 prop_available_files :: String -> [ProcessingFile] -> Property
 prop_available_files junk files' = testIO . withSystemTempDirectory "prop_available_files" $ \dir' -> testAmbiata $ do
-  let files = nub files'
+  let xfiles = nub files'
   let dir = IncomingDir dir'
   let working = toWorkingPath dir Processing
   prepareDir dir
   ls <- liftIO $ availableFiles dir
-  liftIO $ mapM_ (\p -> writeFile (working </> (unpack $ unProcessingFile p)) $ junk) files
+  liftIO $ mapM_ (\p -> writeFile (working </> (unpack $ unProcessingFile p)) $ junk) xfiles
   ls' <- liftIO $ availableFiles dir
-  pure $ (ls, length ls', sort ls') === ([], length files, sort (files))
+  pure $ (ls, length ls', sort ls') === ([], length xfiles, sort (xfiles))
 
 prop_move_to_archive :: String -> ProcessingFile -> Property
 prop_move_to_archive junk f@(ProcessingFile name) = testIO . withSystemTempDirectory "prop_move_to_archive" $ \dir' -> testAmbiata $ do
@@ -66,7 +67,7 @@ prop_upload junk f@(ProcessingFile name) = withLocalAWS $ \p a -> do
   archivedFiles <- processReady dir a
   ls <- liftIO $ availableFiles dir
   let d = (p </> unpack name)
-  download (fileAddress f a) d
+  downloadOrFail (fileAddress f a) d
   c <- liftIO $ readFile d
   pure $ (length archivedFiles, length ls, c) === (1,0,junk)
 
@@ -90,6 +91,9 @@ prop_upload_broken junk (ProcessingFile name) creds' = testIO . withSystemTempDi
 --
 -- | some neat combinators to make tests a bit nicer:
 --
+withLocalAWS :: Testable a => (FilePath -> Address -> AWS a) -> Property
+withLocalAWS x = S3.testAWS $
+  join $ x <$> S3.newFilePath <*> S3.newAddress
 
 runOrFail :: (Monad m) => EitherT Text m a -> m a
 runOrFail = (=<<) (either (fail . unpack) return) . runEitherT
@@ -102,7 +106,9 @@ useTestBucket (TemporaryAccess creds (Address _ k)) = do
   b' <- testBucket
   return $ TemporaryAccess creds (Address b' k)
 
-
+swapEitherT :: Functor m => EitherT a m b -> EitherT b m a
+swapEitherT =
+  newEitherT . fmap (either Right Left) . runEitherT
 
 
 

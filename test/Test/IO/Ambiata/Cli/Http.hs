@@ -52,7 +52,7 @@ withServer app f = do
   bracket
     (forkIO . scotty port' $ app)
     killThread
-    (const $ (recoverAll (limitRetries 5) connect') >> f (def { host = "localhost", port = port' }))
+    (const $ (recoverAll (limitRetries 5) (const connect')) >> f (def { host = "localhost", port = port' }))
 
 
 return []

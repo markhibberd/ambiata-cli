@@ -19,13 +19,12 @@ import           System.IO
 
 import           Control.Monad.IO.Class     (liftIO)
 
-import           Data.Text (Text)
 import qualified Data.Text as T
 
-import           Mismi.S3 hiding ((</>))
+import           Mismi.S3
 
 import           Test.Ambiata.Cli.Arbitrary ()
-import           Test.Mismi.Amazonka
+import qualified Test.Mismi.S3 as S3
 
 
 prop_to_download_missing local =
@@ -82,6 +81,10 @@ withDownload files f =
   withLocalAWS $ \dir' address -> do
     sfiles <- writeFiles address files
     f (DownloadDir dir') sfiles
+
+withLocalAWS :: Testable a => (FilePath -> Address -> AWS a) -> Property
+withLocalAWS x = S3.testAWS $
+  join $ x <$> S3.newFilePath <*> S3.newAddress
 
 writeFiles :: Address -> Map LocalFile Text -> AWS [ServerFile]
 writeFiles address files =

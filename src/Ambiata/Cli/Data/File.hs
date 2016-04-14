@@ -9,7 +9,6 @@ module Ambiata.Cli.Data.File (
 
 import           Control.Exception (IOException)
 
-import           Data.Text (Text)
 import qualified Data.Text as T
 
 import           P

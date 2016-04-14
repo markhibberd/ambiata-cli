@@ -20,14 +20,12 @@ import           Ambiata.Cli.Files
 
 import           Control.Exception
 import           Control.Monad.IO.Class     (liftIO)
-import           Control.Monad.Trans.Either
 
 import           Crypto.Hash.MD5            (hashlazy)
 
 import qualified Data.ByteString            as Strict
 import qualified Data.ByteString.Lazy       as Lazy
 import           Data.Either
-import           Data.Text                  (Text)
 import qualified Data.Text                  as T
 import qualified Data.Text.IO               as TIO
 import           Data.Time.Clock
@@ -44,6 +42,8 @@ import           System.IO.Error
 import           System.Posix.Files
 
 import           Text.Printf
+
+import           X.Control.Monad.Trans.Either
 
 --
 -- INCOMING FOR HANDLING FILES COMING INTO AMBIATA
