@@ -4,16 +4,22 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module Ambiata.Cli.Standalone (
     UploadError
+  , DownloadError
+  , ListError
   , upload
   , upload'
   , uploadExec
   , uploadExec'
+  , list
   , renderUploadError
+  , renderListError
+  , renderDownloadError
   ) where
 
 import           Ambiata.Cli.Api
 import           Ambiata.Cli.Data.Api
 import           Ambiata.Cli.Data.Exec
+import           Ambiata.Cli.Data.Upload
 import           Ambiata.Cli.Data.Upload
 import           Ambiata.Cli.Rest
 
@@ -53,6 +59,14 @@ data UploadError =
   | UploadCantCreatePipe
   | UploadAborted Int
 
+data ListError =
+    ListApiError ApiError
+
+data DownloadError =
+    DownloadApiError ApiError
+  | DownloadAwsError Error
+  | DownloadAddressNotAvailable Address
+
 -- |
 -- Upload a single file via the API.
 --
@@ -60,7 +74,7 @@ upload :: A.Region -> AmbiataAPIKey -> AmbiataAPIEndpoint -> FilePath -> EitherT
 upload region k a f = do
   creds <- bimapEitherT UploadApiError id . apiCall k a $
     obtainCredentialsForUpload
-  privileged <- auth region creds
+  privileged <- authUp region creds
   let target = toTarget creds . FileName . T.pack . takeFileName $ f
   upload' privileged target f
 
@@ -80,7 +94,7 @@ upload' privileged target f = do
 uploadExec :: A.Region -> AmbiataAPIKey -> AmbiataAPIEndpoint -> FileName -> Program -> Arguments -> BufferSize -> EitherT UploadError IO ()
 uploadExec region k a n p args b = do
   creds <- bimapEitherT UploadApiError id . apiCall k a $ obtainCredentialsForUpload
-  privileged <- auth region creds
+  privileged <- authUp region creds
   uploadExec' privileged (toTarget creds n) p args b
 
 uploadExec' :: A.Env -> S3.Address -> Program -> Arguments -> BufferSize -> EitherT UploadError IO ()
@@ -143,19 +157,46 @@ uploadExec' privileged target p args b = do
           void . withPrivilege . A.send $ abort uploadId
           void . withPrivilege $ S3.writeWithModeOrFail S3.Overwrite target ""
 
+list :: A.Region -> AmbiataAPIKey -> AmbiataAPIEndpoint -> Organisation -> Endpoint -> EitherT ListError IO [ServerFile]
+list region k a o e = do
+  fmap downloadPaths . bimapEitherT ListApiError id . apiCall k a $
+    obtainCredentialsForDownload o e
+
+download :: A.Region -> AmbiataAPIKey -> AmbiataAPIEndpoint -> S3.Address -> FilePath -> EitherT ListError IO ()
+download region k a s t = do
+  creds <- bimapEitherT ListApiError id . apiCall k a $
+    obtainCredentialsForDownload o e
+  when (null . filter (== ServerFile s) . downloadPaths $ creds) $
+    left $ DownloadAddressNotAvailable s
+  privileged <- authDown region creds
+  download' privileged s t
+
+download' :: A.Env -> S3.Address -> FilePath -> EitherT ListError IO ()
+download' privileged s t = do
+  runAWST privileged DownloadAwsError $
+    S3.download s t
+
 toTarget :: UploadAccess -> FileName -> S3.Address
 toTarget creds n =
   S3.withKey (// Key (fileName n)) . s3Path . unUploadAccess $ creds
 
-auth :: A.Region -> UploadAccess -> EitherT e IO A.Env
-auth region creds =
+authUp :: A.Region -> UploadAccess -> EitherT e IO A.Env
+authUp region creds =
+  auth' region (tempCreds . unUploadAccess $ creds)
+
+authDown :: A.Region -> DownloadAccess -> EitherT e IO A.Env
+authDown region creds =
+  auth' region (downloadTemporaryCred creds)
+
+auth' :: A.Region -> TemporaryCreds -> EitherT e IO A.Env
+auth' region creds =
   fmap (configureRetries 10) . setDebugging
     <$> getDebugging
     <*> newEnvFromCreds
       region
-      (tempKey . tempCreds . unUploadAccess $ creds)
-      (tempSecret . tempCreds . unUploadAccess  $ creds)
-      (Just . sessionToken . tempCreds . unUploadAccess $ creds)
+      (tempKey $ creds)
+      (tempSecret  $ creds)
+      (Just . sessionToken $ creds)
 
 convert :: [A.ETag] -> Maybe (NonEmpty A.CompletedPart)
 convert parts =
@@ -177,3 +218,19 @@ renderUploadError err =
       mconcat ["Couldn't create a pipe to your executable."]
     UploadAborted e ->
       mconcat ["Exec process failed with status - ", T.pack . show $ e]
+
+renderListError :: ListError -> Text
+renderListError err =
+  case err of
+    ListApiError e ->
+      mconcat ["There was an error contacting the Ambiata API - ", renderApiError e]
+
+renderDownloadError :: DownloadError -> Text
+renderDownloadError err =
+  case err of
+    DownloadApiError e ->
+      mconcat ["There was an error contacting the Ambiata API - ", renderApiError e]
+    DownloadAwsError e ->
+      mconcat ["There was an error contacting the Amazon API - ", renderError e]
+    DownloadAddressNotAvailable a ->
+      mconcat ["The specified download is no longer available for download: ", addressToText a]
