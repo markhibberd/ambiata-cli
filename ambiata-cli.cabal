@@ -116,6 +116,27 @@ executable ambiata-daemon
                    , ambiata-x-optparse
                    , text                            == 1.2.1.*
 
+executable ambiata
+  if flag(staticgmp)
+    ghc-options:       -Wall -threaded -O2 -pgml gcc-with-gmp.sh
+  else
+    ghc-options:       -Wall -threaded -O2
+
+  hs-source-dirs:
+                       gen
+  main-is:
+                       ../main/ambiata.hs
+
+  build-depends:     base                             >= 3          && < 5
+                   , ambiata-cli
+                   , ambiata-p
+                   , ambiata-mismi-core
+                   , ambiata-mismi-s3
+                   , ambiata-x-eithert
+                   , ambiata-x-optparse
+                   , optparse-applicative
+                   , text
+
 test-suite test
   type:                exitcode-stdio-1.0
 
