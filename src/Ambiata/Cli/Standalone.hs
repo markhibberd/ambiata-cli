@@ -11,6 +11,8 @@ module Ambiata.Cli.Standalone (
   , uploadExec
   , uploadExec'
   , list
+  , download
+  , download'
   , renderUploadError
   , renderListError
   , renderDownloadError
@@ -20,7 +22,7 @@ import           Ambiata.Cli.Api
 import           Ambiata.Cli.Data.Api
 import           Ambiata.Cli.Data.Exec
 import           Ambiata.Cli.Data.Upload
-import           Ambiata.Cli.Data.Upload
+import           Ambiata.Cli.Data.Download hiding (DownloadError, renderDownloadError)
 import           Ambiata.Cli.Rest
 
 import           Control.Monad.Catch (bracket_, onException, throwM)
@@ -65,7 +67,8 @@ data ListError =
 data DownloadError =
     DownloadApiError ApiError
   | DownloadAwsError Error
-  | DownloadAddressNotAvailable Address
+  | DownloadAddressNotAvailable S3.Address
+  | DownloadS3DownloadError S3.DownloadError
 
 -- |
 -- Upload a single file via the API.
@@ -157,23 +160,23 @@ uploadExec' privileged target p args b = do
           void . withPrivilege . A.send $ abort uploadId
           void . withPrivilege $ S3.writeWithModeOrFail S3.Overwrite target ""
 
-list :: A.Region -> AmbiataAPIKey -> AmbiataAPIEndpoint -> Organisation -> Endpoint -> EitherT ListError IO [ServerFile]
-list region k a o e = do
+list :: AmbiataAPIKey -> AmbiataAPIEndpoint -> Organisation -> Endpoint -> EitherT ListError IO [ServerFile]
+list k a o e = do
   fmap downloadPaths . bimapEitherT ListApiError id . apiCall k a $
     obtainCredentialsForDownload o e
 
-download :: A.Region -> AmbiataAPIKey -> AmbiataAPIEndpoint -> S3.Address -> FilePath -> EitherT ListError IO ()
-download region k a s t = do
-  creds <- bimapEitherT ListApiError id . apiCall k a $
+download :: A.Region -> AmbiataAPIKey -> AmbiataAPIEndpoint -> Organisation -> Endpoint -> S3.Address -> FilePath -> EitherT DownloadError IO ()
+download region k a o e s t = do
+  creds <- bimapEitherT DownloadApiError id . apiCall k a $
     obtainCredentialsForDownload o e
-  when (null . filter (== ServerFile s) . downloadPaths $ creds) $
+  when (null . filter ((== s) . unServerFile) . downloadPaths $ creds) $
     left $ DownloadAddressNotAvailable s
   privileged <- authDown region creds
   download' privileged s t
 
-download' :: A.Env -> S3.Address -> FilePath -> EitherT ListError IO ()
+download' :: A.Env -> S3.Address -> FilePath -> EitherT DownloadError IO ()
 download' privileged s t = do
-  runAWST privileged DownloadAwsError $
+  runAWST privileged DownloadAwsError . bimapEitherT DownloadS3DownloadError id $
     S3.download s t
 
 toTarget :: UploadAccess -> FileName -> S3.Address
@@ -233,4 +236,6 @@ renderDownloadError err =
     DownloadAwsError e ->
       mconcat ["There was an error contacting the Amazon API - ", renderError e]
     DownloadAddressNotAvailable a ->
-      mconcat ["The specified download is no longer available for download: ", addressToText a]
+      mconcat ["The specified download is no longer available for download: ", S3.addressToText a]
+    DownloadS3DownloadError e ->
+      mconcat ["The requested download could not be complete: ", S3.renderDownloadError e]

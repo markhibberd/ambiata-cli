@@ -48,7 +48,6 @@ prop_uploadExec txt  = withLocalAWS $ \p a -> do
   r <- read a
   pure $ r === Just txt
 
-
 prop_uploadExecBigger :: Text -> Property
 prop_uploadExecBigger txt  = withLocalAWS $ \p a -> do
   env <- ask
@@ -59,6 +58,16 @@ prop_uploadExecBigger txt  = withLocalAWS $ \p a -> do
     Standalone.uploadExec' env a (Program "cat") (Arguments [T.pack $ f]) (BufferSize $ 1024 * 1024 * 10)
   r <- read a
   pure $ r === Just big
+
+prop_download :: Text -> Property
+prop_download txt  = withLocalAWS $ \p a -> do
+  env <- ask
+  let f = p </> "file"
+  writeOrFail a txt
+  liftIO . runOrFail . bimapEitherT Standalone.renderDownloadError id $ do
+    Standalone.download' env a f
+  r <- liftIO $ T.readFile f
+  pure $ r === txt
 
 --
 -- | some neat combinators to make tests a bit nicer:
@@ -72,4 +81,4 @@ runOrFail = (=<<) (either (fail . unpack) return) . runEitherT
 
 return []
 tests :: IO Bool
-tests = $forAllProperties $ quickCheckWithResult (stdArgs { maxSuccess = 100 })
+tests = $forAllProperties $ quickCheckWithResult (stdArgs { maxSuccess = 10 })

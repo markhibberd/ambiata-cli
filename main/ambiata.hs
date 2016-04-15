@@ -1,7 +1,10 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-import           Ambiata.Cli.Data
+import           Ambiata.Cli.Data.Api
+import           Ambiata.Cli.Data.Download (unServerFile)
+import           Ambiata.Cli.Data.Exec
+import           Ambiata.Cli.Data.Transfer
 import           Ambiata.Cli.Standalone
 
 import           BuildInfo_ambiata_cli
@@ -15,6 +18,7 @@ import qualified Data.Text.IO as T
 import           GHC.Conc (getNumProcessors)
 
 import qualified Mismi.Amazonka as A
+import qualified Mismi.S3 as S3
 
 import           Options.Applicative
 
@@ -30,6 +34,8 @@ import           X.Control.Monad.Trans.Either.Exit (orDie)
 data Command =
     UploadCommand FilePath
   | UploadExecCommand BufferSize FileName Program Arguments
+  | ListCommand Organisation Endpoint
+  | DownloadCommand Organisation Endpoint S3.Address FilePath
     deriving (Eq, Show)
 
 main :: IO ()
@@ -61,6 +67,10 @@ parser =
         UploadCommand <$> fileP
     , command' "upload-exec" "Execute a program and upload its standard output." $
         UploadExecCommand <$> bufferP <*> fileNameP <*> progP <*> argsP
+    , command' "download-listing" "List files available for download" $
+        ListCommand <$> orgP <*> endP
+    , command' "download" "Download specified file" $
+        DownloadCommand <$> orgP <*> endP <*> sourceP <*> targetP
     ]
 
 run :: Command -> IO ()
@@ -75,6 +85,18 @@ run c = case c of
     a <- AmbiataAPIEndpoint <$> textOr "AMBIATA_API_ENDPOINT" "https://api.ambiata.com"
     orDie renderUploadError $
       uploadExec A.Sydney k a f p args b
+  ListCommand o e -> do
+    k <- AmbiataAPIKey <$> text "AMBIATA_API_KEY"
+    a <- AmbiataAPIEndpoint <$> textOr "AMBIATA_API_ENDPOINT" "https://api.ambiata.com"
+    fs <- orDie renderListError $
+      list k a o e
+    forM_ fs $ \f ->
+      T.putStrLn . S3.addressToText . unServerFile $ f
+  DownloadCommand o e s t -> do
+    k <- AmbiataAPIKey <$> text "AMBIATA_API_KEY"
+    a <- AmbiataAPIEndpoint <$> textOr "AMBIATA_API_ENDPOINT" "https://api.ambiata.com"
+    orDie renderDownloadError $
+      download A.Sydney k a o e s t
 
 fileP :: Parser FilePath
 fileP =
@@ -83,11 +105,39 @@ fileP =
     , help "File path to upload."
     ]
 
+targetP :: Parser FilePath
+targetP =
+  argument str . mconcat $ [
+      metavar "FILE"
+    , help "File path to download to"
+    ]
+
+sourceP :: Parser S3.Address
+sourceP =
+  argument (pOption S3.s3Parser) . mconcat $ [
+      metavar "S3_ADDRESS"
+    , help "S3 address to request for download."
+    ]
+
 fileNameP :: Parser FileName
 fileNameP =
   fmap FileName . argument textRead . mconcat $ [
       metavar "FILE_NAME"
     , help "File name to use for upload."
+    ]
+
+orgP :: Parser Organisation
+orgP =
+  fmap Organisation . argument textRead . mconcat $ [
+      metavar "ORGANISATION_ID"
+    , help "Your organisation id, e.g. 12345679."
+    ]
+
+endP :: Parser Endpoint
+endP =
+  fmap Endpoint . argument textRead . mconcat $ [
+      metavar "ENDPOINT_ID"
+    , help "Your endpoint id, e.g. 12345679."
     ]
 
 progP :: Parser Program
@@ -110,7 +160,7 @@ bufferP =
       long "buffer-size"
     , metavar "BUFFER_SIZE_BYTES"
     , help "Buffer size of upload chunks, a direct control on memory usage vs chunk performance, defaults to 100MB chunks."
-    , val $ 1024 * 1024 * 100
+    , value $ 1024 * 1024 * 100
     ]
 
 text :: String -> IO Text
