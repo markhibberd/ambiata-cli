@@ -9,14 +9,13 @@ module Ambiata.Cli.Data (
 import           Ambiata.Cli.Data.Api as X
 import           Ambiata.Cli.Data.Download as X
 import           Ambiata.Cli.Data.Env as X
+import           Ambiata.Cli.Data.Exec as X
 import           Ambiata.Cli.Data.File as X
 import           Ambiata.Cli.Data.Upload as X
 
 import           Mismi (Error, renderError)
 
 import           P
-
-import           Data.Text (Text)
 
 
 data AmbiataError =

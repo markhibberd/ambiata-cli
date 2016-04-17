@@ -19,8 +19,6 @@ import           Data.Aeson
 import qualified Data.Text as T
 import           Data.Text.Encoding
 
-import           Control.Monad.Trans.Either
-
 import           Network.HTTP.Client
 
 import           Test.Ambiata.Cli.Arbitrary ()
@@ -29,6 +27,8 @@ import           Test.QuickCheck
 import           Test.QuickCheck.Instances  ()
 
 import           Web.Scotty                 as S
+
+import           X.Control.Monad.Trans.Either
 
 prop_upload_creds :: AmbiataAPIKey -> TemporaryAccess -> Property
 prop_upload_creds k ta = testIO $ do

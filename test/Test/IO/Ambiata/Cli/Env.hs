@@ -23,9 +23,9 @@ import           Control.Monad.IO.Class         (liftIO)
 import           Test.Ambiata.Cli.Arbitrary     ()
 import           Test.IO.Ambiata.Cli.Processing     (expectLeft, runOrFail)
 
-import           Control.Monad.Trans.Either
-
 import           Snooze.Url
+
+import           X.Control.Monad.Trans.Either
 
 
 prop_load_failure :: Property

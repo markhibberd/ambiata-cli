@@ -1,6 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE RankNTypes #-}
 module Ambiata.Cli.Http (
     ErrorCount (..)
   , httpGo
@@ -50,7 +51,9 @@ httpGo :: RetryPolicy -> Manager -> Request -> IO (Response BSL.ByteString, Erro
 httpGo rp mgr req =
     runWriterT
   . retrying rp (const $ countError . pure . httpStatusRetry . responseStatus)
+  . const
   . recovering rp [const httpExceptionHandler]
+  . const
   . lift
   $ httpGo' mgr req
 

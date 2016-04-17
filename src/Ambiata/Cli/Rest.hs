@@ -30,13 +30,14 @@ import qualified Data.Text as T
 
 import           Control.Monad.Catch        (catch)
 import           Control.Monad.IO.Class     (liftIO)
-import           Control.Monad.Trans.Either
 
 import           Data.Aeson
 
 import           Network.HTTP.Client
 import           Network.HTTP.Client.TLS
 import           Network.HTTP.Types
+
+import           X.Control.Monad.Trans.Either
 
 
 data ApiRequest a =

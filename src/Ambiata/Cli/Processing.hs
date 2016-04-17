@@ -19,7 +19,6 @@ import           Ambiata.Cli.Data
 
 import           Control.Monad.IO.Class       (liftIO)
 import           Control.Monad.Reader         (local)
-import           Control.Monad.Trans.Either
 
 import qualified Data.Text                    as T
 
@@ -31,6 +30,9 @@ import           P
 import           System.Directory
 import           System.FilePath              hiding ((</>))
 import           System.IO
+
+import           X.Control.Monad.Trans.Either
+
 
 -- |
 -- Upload the files that are in the processing dir, and move to archive when done.
@@ -58,7 +60,7 @@ uploadAction dir a f@(ProcessingFile fname) = do
 
 fileAddress :: ProcessingFile -> Address -> Address
 fileAddress (ProcessingFile fname) (Address b k) =
-    Address b (k </> Key fname)
+    Address b (k // Key fname)
 
 -- |
 -- Stuff ready to go

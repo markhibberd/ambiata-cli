@@ -15,13 +15,11 @@ import           Ambiata.Cli.Incoming
 import           Ambiata.Cli.Processing
 import           Ambiata.Cli.Rest
 
-import           Data.Text                    (Text)
 import qualified Data.Text                    as T
 import           Data.Time.Clock
 
 import           Control.Exception
 import           Control.Monad.IO.Class       (liftIO)
-import           Control.Monad.Trans.Either
 
 import           Mismi
 
