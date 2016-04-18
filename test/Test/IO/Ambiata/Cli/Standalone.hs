@@ -39,7 +39,7 @@ prop_upload txt  = withLocalAWS $ \p a -> do
   pure $ r === Just txt
 
 prop_uploadExec :: Text -> Property
-prop_uploadExec txt  = withLocalAWS $ \p a -> do
+prop_uploadExec txt = (not . T.null $ txt) ==> withLocalAWS $ \p a -> do
   env <- ask
   let f = p </> "file"
   liftIO $ T.writeFile f txt
@@ -49,7 +49,7 @@ prop_uploadExec txt  = withLocalAWS $ \p a -> do
   pure $ r === Just txt
 
 prop_uploadExecBigger :: Text -> Property
-prop_uploadExecBigger txt  = withLocalAWS $ \p a -> do
+prop_uploadExecBigger txt = (not . T.null $ txt) ==> withLocalAWS $ \p a -> do
   env <- ask
   let big = T.replicate 100 txt
   let f = p </> "file"
