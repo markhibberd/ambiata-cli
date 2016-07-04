@@ -21,8 +21,6 @@ import           Data.Time.Clock
 import           Control.Exception
 import           Control.Monad.IO.Class       (liftIO)
 
-import           Mismi
-
 import           P
 
 import           System.Exit
@@ -83,7 +81,7 @@ doDownload (DownloadEnv dir o e c) = do
   creds <- bimapEitherT AmbiataApiError id
     . apiCall (apiKey c) (apiEndpoint c)
     $ obtainCredentialsForDownload o e
-  downloadReady dir Sydney creds
+  downloadReady dir (awsRegion c) creds
 
 doUpload :: UploadEnv -> EitherT AmbiataError IO UploadResult
 doUpload (UploadEnv dir retention c) = do
@@ -96,7 +94,7 @@ doUpload (UploadEnv dir retention c) = do
   now   <- liftIO $ getCurrentTime
   (incoming, processing, bads)  <- processDir dir (NoChangeAfter $ twoMinutesBefore now)
   liftIO $ mapM_ warnBadFile bads
-  uploaded <- fmap concat $ mapM (const $ uploadReady dir Sydney creds) processing
+  uploaded <- fmap concat $ mapM (const $ uploadReady dir (awsRegion c) creds) processing
 
   liftIO $ debugM logCtx "Cleaning up archived files..."
   cleaned <- cleanUpArchived dir retention now
