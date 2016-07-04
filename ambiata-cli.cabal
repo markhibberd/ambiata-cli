@@ -154,6 +154,7 @@ test-suite test
                     , ambiata-disorder-aeson
                     , ambiata-disorder-core
                     , ambiata-disorder-corpus
+                    , ambiata-mismi-core
                     , ambiata-mismi-core-test
                     , ambiata-mismi-s3
                     , ambiata-mismi-s3-test
