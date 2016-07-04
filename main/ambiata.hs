@@ -4,6 +4,7 @@
 import           Ambiata.Cli.Data.Api
 import           Ambiata.Cli.Data.Download (unServerFile)
 import           Ambiata.Cli.Data.Exec
+import           Ambiata.Cli.Data.Env
 import           Ambiata.Cli.Data.Transfer
 import           Ambiata.Cli.Standalone
 
@@ -17,7 +18,6 @@ import qualified Data.Text.IO as T
 
 import           GHC.Conc (getNumProcessors)
 
-import qualified Mismi.Amazonka as A
 import qualified Mismi.S3 as S3
 
 import           Options.Applicative
@@ -77,26 +77,30 @@ run :: Command -> IO ()
 run c = case c of
   UploadCommand f -> do
     k <- AmbiataAPIKey <$> text "AMBIATA_API_KEY"
-    a <- AmbiataAPIEndpoint <$> textOr "AMBIATA_API_ENDPOINT" "https://api.ambiata.com"
+    r <- textParseOr "AMBIATA_REGION" AmbiataAu parseAmbiataRegion
+    a <- AmbiataAPIEndpoint <$> textOr "AMBIATA_API_ENDPOINT" (unAmbEndpoint . defaultAmbiataAPIEndpointFor $ r)
     orDie renderUploadError $
-      upload A.Sydney k a f
+      upload (toAWSRegion r) k a f
   UploadExecCommand b f p args -> do
     k <- AmbiataAPIKey <$> text "AMBIATA_API_KEY"
-    a <- AmbiataAPIEndpoint <$> textOr "AMBIATA_API_ENDPOINT" "https://api.ambiata.com"
+    r <- textParseOr "AMBIATA_REGION" AmbiataAu parseAmbiataRegion
+    a <- AmbiataAPIEndpoint <$> textOr "AMBIATA_API_ENDPOINT" (unAmbEndpoint . defaultAmbiataAPIEndpointFor $ r)
     orDie renderUploadError $
-      uploadExec A.Sydney k a f p args b
+      uploadExec (toAWSRegion r) k a f p args b
   ListCommand o e -> do
     k <- AmbiataAPIKey <$> text "AMBIATA_API_KEY"
-    a <- AmbiataAPIEndpoint <$> textOr "AMBIATA_API_ENDPOINT" "https://api.ambiata.com"
+    r <- textParseOr "AMBIATA_REGION" AmbiataAu parseAmbiataRegion
+    a <- AmbiataAPIEndpoint <$> textOr "AMBIATA_API_ENDPOINT" (unAmbEndpoint . defaultAmbiataAPIEndpointFor $ r)
     fs <- orDie renderListError $
       list k a o e
     forM_ fs $ \f ->
       T.putStrLn . S3.addressToText . unServerFile $ f
   DownloadCommand o e s t -> do
     k <- AmbiataAPIKey <$> text "AMBIATA_API_KEY"
-    a <- AmbiataAPIEndpoint <$> textOr "AMBIATA_API_ENDPOINT" "https://api.ambiata.com"
+    r <- textParseOr "AMBIATA_REGION" AmbiataAu parseAmbiataRegion
+    a <- AmbiataAPIEndpoint <$> textOr "AMBIATA_API_ENDPOINT" (unAmbEndpoint . defaultAmbiataAPIEndpointFor $ r)
     orDie renderDownloadError $
-      download A.Sydney k a o e s t
+      download (toAWSRegion r) k a o e s t
 
 fileP :: Parser FilePath
 fileP =
@@ -172,6 +176,11 @@ textOr :: String -> Text -> IO Text
 textOr e v =
   lookupEnv e >>=
     maybe (pure v) (pure . T.pack)
+
+textParseOr :: String -> a -> (Text -> Maybe a) -> IO a
+textParseOr e v p =
+  lookupEnv e >>=
+    maybe (pure v) (fromMaybeM (bomb . T.pack $ e <> " could not be parsed.") . p . T.pack)
 
 bomb :: Text -> IO a
 bomb msg =

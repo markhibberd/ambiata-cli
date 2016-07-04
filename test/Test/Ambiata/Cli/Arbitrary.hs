@@ -78,3 +78,7 @@ instance Arbitrary ServerFile where
       (\a k -> withKey (flip combineKey k) a)
         <$> arbitrary
         <*> (Key . unLocalFile <$> arbitrary)
+
+instance Arbitrary AmbiataRegion where
+  arbitrary =
+    elements [AmbiataAu, AmbiataUs]

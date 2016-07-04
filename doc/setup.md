@@ -54,6 +54,10 @@ they can be set if required.
    verbose logging, which may be helpful in diagnosing issues with the
    upload.
 
+ - `AMBIATA_REGION` (default: au). Setting this to "us" will enable
+   the us-beta region. This will only work for us-beta customers.
+
+
 ## Proxy configuration
 
 The `ambiata` command will respect proxy configuration via

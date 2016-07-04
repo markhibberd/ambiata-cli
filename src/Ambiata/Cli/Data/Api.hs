@@ -24,7 +24,7 @@ newtype AmbiataAPIKey = AmbiataAPIKey {
 
 newtype AmbiataAPIEndpoint = AmbiataAPIEndpoint {
     unAmbEndpoint :: Text
-  } deriving (Show)
+  } deriving (Eq, Show)
 
 newtype Organisation =
   Organisation {

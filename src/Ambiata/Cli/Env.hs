@@ -50,9 +50,14 @@ common :: Parser CommonEnv
 common =
     CommonEnv <$> var appToken "AMBIATA_API_KEY" (help "Application token for Ambiata API.")
               <*> (var endpoint "AMBIATA_API_ENDPOINT" $ fold <> mempty $
-                    [ def (AmbiataAPIEndpoint "https://api.ambiata.com")
-                    , helpDef (T.unpack . unAmbEndpoint)
+                    [ def Nothing
+                    , helpDef (const . T.unpack . unAmbEndpoint $ defaultAmbiataAPIEndpoint)
                     , help "API endpoint from which to request upload credentials."
+                    ])
+              <*> (var region "AMBIATA_REGION" $ fold <> mempty $
+                    [ def AmbiataAu
+                    , helpDef (const "au")
+                    , help "Ambiata Region For API Access, one of 'au' or 'us'."
                     ])
               <*> (runmode <$> (switch "ONESHOT" (help "Don't run forever.")))
               <*> (debugVerbosity <$> (switch "DEBUG" (help "Turn on verbose logging.")))
@@ -66,8 +71,12 @@ outgoingdir = str >=> nonempty >=> (Right . DownloadDir)
 nonemptyStr :: Reader Text
 nonemptyStr = str >=> nonempty
 
-endpoint :: Reader AmbiataAPIEndpoint
-endpoint = (fmap . fmap) (AmbiataAPIEndpoint . T.pack) $ (nonempty >=> str)
+endpoint :: Reader (Maybe AmbiataAPIEndpoint)
+endpoint = (fmap . fmap) (Just . AmbiataAPIEndpoint . T.pack) $ (nonempty >=> str)
+
+region :: Reader AmbiataRegion
+region = nonempty >=> str >=> (maybeToRight "Invalid specification for AMBIATA_REGION must be 'au' or 'us'." . parseAmbiataRegion)
+
 
 runmode :: Bool -> RunMode
 runmode True = OneShot
