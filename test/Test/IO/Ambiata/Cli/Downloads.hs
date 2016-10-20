@@ -41,6 +41,7 @@ prop_download_files local =
     c2 <- liftIO $ readFiles dir r2
     pure $ (c1, c2) === (local, M.empty)
 
+prop_download_files_more :: Map LocalFile Text -> Map LocalFile Text -> Property
 prop_download_files_more l1 l2' =
   withLocalAWS $ \dir' address -> do
     let dir = DownloadDir dir'
@@ -53,6 +54,7 @@ prop_download_files_more l1 l2' =
     c2 <- liftIO $ readFiles dir r2
     pure $ (c1, c2) === (l1, l2)
 
+prop_download_fail_missing :: Map LocalFile Text -> Map LocalFile Text -> Property
 prop_download_fail_missing l1 l2 =
   M.size l2 > 0 ==>
   withLocalAWS $ \dir address -> do
