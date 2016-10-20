@@ -5,6 +5,5 @@
 
 [build.branches-7-8]
 
-
-[build.validate]
+[build.dist-validate]
   command = [["validate-respect"]]
