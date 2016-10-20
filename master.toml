@@ -2,12 +2,30 @@
   version = 1
 
 [build.dist-7-8]
+  GHC_VERSION = "7.8.4"
+  CABAL_VERSION = "1.22.4.0"
 
   [build.dist-7-8.master]
     runner="bin/ci"
 
-
 [build.branches-7-8]
+  GHC_VERSION = "7.8.4"
+  CABAL_VERSION = "1.22.4.0"
 
   [build.branches-7-8.master]
     runner="bin/ci.branches"
+
+[build.dist-7-10]
+  GHC_VERSION = "7.10.2"
+  CABAL_VERSION = "1.22.4.0"
+
+  [build.dist-7-10.master]
+    runner="bin/ci"
+
+[build.branches-7-10]
+  GHC_VERSION = "7.10.2"
+  CABAL_VERSION = "1.22.4.0"
+
+  [build.branches-7-10.master]
+    runner="bin/ci.branches"
+

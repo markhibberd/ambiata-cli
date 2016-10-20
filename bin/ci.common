@@ -3,6 +3,20 @@
 export LC_COLLATE=en_US.UTF-8
 export LANG=en_US.UTF-8
 
+if command -v ghc-path >/dev/null 2>&1; then
+    GHC_PATH=$(ghc-path)
+    export PATH=$GHC_PATH:$PATH
+else
+    echo "Warning: ghc-path not available, defaulting to ghc on path." >&2
+fi
+
+if command -v cabal-path >/dev/null 2>&1; then
+    CABAL_PATH=$(cabal-path)
+    export PATH=$CABAL_PATH:$PATH
+else
+    echo "Warning: cabal-path not available, defaulting to cabal on path." 1>&2
+fi
+
 export STATIC_GMP=/usr/lib64/libgmp.a
 export CABAL_CONFIG_ARGS="-fstaticgmp"
 export PATH=$(dirname $0):$PATH
