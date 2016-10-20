@@ -9,12 +9,14 @@ module Ambiata.Cli.Env (
   , downloadEnv
   , downloadEnv'
   , common
+  , apiCredential
   ) where
 
 import           Ambiata.Cli.Data
 
 import           Data.Maybe
-import qualified Data.Text           as T
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 
 import           Env
 
@@ -23,6 +25,8 @@ import           Network.URI         ()
 import           P
 
 import           System.IO
+
+import qualified Zodiac.HttpClient as Z
 
 uploadEnv :: IO UploadEnv
 uploadEnv = parse (header "ambiata-upload") uploadEnv'
@@ -43,8 +47,8 @@ downloadEnv' :: Parser DownloadEnv
 downloadEnv' =
   DownloadEnv
     <$> var outgoingdir "DOWNLOAD_DIR" (help "Directory to download to.")
-    <*> var (fmap Organisation <$> nonemptyStr) "ORGANISATION_ID" (help "Organisation ID")
-    <*> var (fmap Endpoint <$> nonemptyStr)  "ENDPOINT_ID" (help "Endpoint ID to download from")
+    <*> var (fmap Organisation <$> nonempty) "ORGANISATION_ID" (help "Organisation ID")
+    <*> var (fmap Endpoint <$> nonempty)  "ENDPOINT_ID" (help "Endpoint ID to download from")
     <*> common
 
 common :: Parser CommonEnv
@@ -63,17 +67,47 @@ common =
               <*> (runmode <$> (switch "ONESHOT" (help "Don't run forever.")))
               <*> (debugVerbosity <$> (switch "DEBUG" (help "Turn on verbose logging.")))
 
+apiCredential :: Parser AmbiataAPICredential
+apiCredential =
+  tsrpCredential
+
+tsrpCredential :: Parser AmbiataAPICredential
+tsrpCredential =
+  TSRPCredential
+    <$> var tsrpKeyId "AMBIATA_API_KEY_ID" (help "API key ID.")
+    <*> var tsrpKey "AMBIATA_API_KEY_SECRET" (help "API key secret.")
+    <*> var requestExpiry "AMBIATA_API_REQUEST_EXPIRY" (
+             help "Seconds before request expires. You shouldn't need to change this."
+          <> def (RequestExpiry 60)
+          <> helpDef (show . unRequestExpiry))
+
+requestExpiry :: Reader RequestExpiry
+requestExpiry =
+  auto >=> \x -> case x > 0 of
+    True -> pure $ RequestExpiry x
+    False -> Left "Request expiry must be positive."
+
+tsrpKey :: Reader TSRPKey
+tsrpKey =
+  nonempty >=>
+    (maybeToRight "Provided key secret is invalid." . lazyMaybe' . Z.parseTSRPKey . T.encodeUtf8)
+
+tsrpKeyId :: Reader KeyId
+tsrpKeyId =
+  nonempty >=>
+    (maybeToRight "Provided key ID is invalid." . lazyMaybe' . Z.parseKeyId . T.encodeUtf8)
+
 incomingdir :: Reader IncomingDir
-incomingdir = str >=> nonempty >=> (Right . IncomingDir)
+incomingdir = nonempty >=> (Right . IncomingDir)
 
 outgoingdir :: Reader DownloadDir
-outgoingdir = str >=> nonempty >=> (Right . DownloadDir)
-
-nonemptyStr :: Reader Text
-nonemptyStr = str >=> nonempty
+outgoingdir = nonempty >=> (Right . DownloadDir)
 
 endpoint :: Reader (Maybe AmbiataAPIEndpoint)
-endpoint = (fmap . fmap) (Just . AmbiataAPIEndpoint . T.pack) $ (nonempty >=> str)
+endpoint = maybeR AmbiataAPIEndpoint
+
+maybeR :: (Text -> a) -> Reader (Maybe a)
+maybeR f = (fmap . fmap) (Just . f . T.pack) nonempty
 
 region :: Reader AmbiataRegion
 region = nonempty >=> str >=> (maybeToRight "Invalid specification for AMBIATA_REGION must be 'au' or 'us'." . parseAmbiataRegion)
@@ -84,7 +118,7 @@ runmode True = OneShot
 runmode False = Daemon
 
 appToken :: Reader AmbiataAPIKey
-appToken = str >=> nonempty >=> (Right . AmbiataAPIKey . T.pack)
+appToken = nonempty >=> (Right . AmbiataAPIKey . T.pack)
 
 debugVerbosity :: Bool -> Verbosity
 debugVerbosity True  = Verbose
