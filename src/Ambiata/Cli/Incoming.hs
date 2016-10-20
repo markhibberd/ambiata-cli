@@ -35,7 +35,8 @@ import           Foreign.C.Types            (CTime (..))
 
 import           P
 
-import           System.Directory
+import           System.Directory (getDirectoryContents, doesFileExist, removeFile)
+import           System.Directory (createDirectoryIfMissing, getModificationTime, renameFile)
 import           System.FilePath
 import           System.IO
 import           System.IO.Error
