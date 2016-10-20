@@ -44,9 +44,6 @@ library
                      , http-client                     == 0.4.18.*
                      , http-client-tls                 == 0.2.*
                      , http-types                      == 0.8.*
-                     -- FIX Remove when mismi is upgraded
-                     -- https://github.com/ambiata/mismi/pull/274
-                     , ini                             == 0.3.3
                      , lens                            >= 4.8       && < 4.10
                      , mtl                             == 2.2.*
                      , process                         == 1.2.*

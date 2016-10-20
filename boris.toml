@@ -5,6 +5,11 @@
 
 [build.branches-7-8]
 
-
-[build.validate]
+[build.dist-validate]
   command = [["validate-respect"]]
+
+[build.all-submodules]
+  command = [["dangling-refs"]]
+
+[build.all-rebased]
+  command = [["rebased"]]
