@@ -33,6 +33,9 @@ library
                      , bytestring                      == 0.10.*
                      , cryptohash                      == 0.11.*
                      , conduit                         == 1.2.*
+                       -- Temporary workaround for http-client.
+                       -- https://github.com/erikd-ambiata/test-warp-wai/issues/1
+                     , connection                      == 0.2.5
                      , clock                           == 0.5.*
                      , data-default                    == 0.5.*
                      , directory                       == 1.2.*
@@ -51,9 +54,9 @@ library
                      , retry                           == 0.7.*
                      , old-locale                      == 1.0.*
                      , semigroups                      == 0.18.*
-                     , text                            == 1.2.1.*
-                     , time                            == 1.4.*
-                     , transformers                    >= 0.3        && < 0.5
+                     , text                            == 1.2.*
+                     , time                            >= 1.4        && < 1.7
+                     , transformers                    >= 0.3        && < 0.6
                      , unix                            == 2.7.*
 
 
@@ -159,7 +162,7 @@ test-suite test
                     , directory
                     , filepath
                     , quickcheck-instances            == 0.3.*
-                    , text                            == 1.2.1.*
+                    , text                            == 1.2.*
                     , time
                     , turtle                          == 1.2.*
 
@@ -202,7 +205,7 @@ test-suite test-io
                     , retry
                     , scotty
                     , temporary
-                    , text                            == 1.2.1.*
+                    , text                            == 1.2.*
                     , time
                     , transformers
                     , turtle                          == 1.2.*
@@ -231,6 +234,6 @@ test-suite test-cli
                     , directory
                     , filepath
                     , quickcheck-instances            == 0.3.*
-                    , text                            == 1.2.1.*
+                    , text                            == 1.2.*
                     , time
                     , turtle                          == 1.2.*

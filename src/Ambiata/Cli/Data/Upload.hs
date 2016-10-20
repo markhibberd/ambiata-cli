@@ -32,6 +32,7 @@ import           Ambiata.Cli.Data.Transfer as X
 
 import qualified Data.Text as T
 import           Data.Time (UTCTime, formatTime)
+import           Data.Time.Format (defaultTimeLocale)
 
 import           Mismi.S3 (Address)
 
@@ -39,7 +40,6 @@ import           P
 
 import           System.FilePath ((</>))
 import           System.IO (FilePath)
-import           System.Locale (defaultTimeLocale)
 
 
 newtype IncomingDir = IncomingDir {

@@ -1,13 +1,17 @@
 [master]
   version = 1
 
-[build.dist-7-8]
+[build.dist-7-10]
+  GHC_VERSION = "7.10.2"
+  CABAL_VERSION = "1.22.4.0"
 
-  [build.dist-7-8.master]
+  [build.dist-7-10.master]
     runner="bin/ci"
 
+[build.branches-7-10]
+  GHC_VERSION = "7.10.2"
+  CABAL_VERSION = "1.22.4.0"
 
-[build.branches-7-8]
-
-  [build.branches-7-8.master]
+  [build.branches-7-10.master]
     runner="bin/ci.branches"
+
