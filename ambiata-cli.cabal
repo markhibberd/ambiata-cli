@@ -25,9 +25,12 @@ library
                      , ambiata-mismi-core
                      , ambiata-mismi-s3
                      , ambiata-p
+                     , ambiata-tinfoil
                      , ambiata-twine
                      , ambiata-x-eithert
                      , ambiata-x-optparse
+                     , ambiata-zodiac-core
+                     , ambiata-zodiac-http-client
                      , base64-bytestring               == 1.0.*
                      , blaze-builder                   == 0.4.*
                      , bytestring                      == 0.10.*
