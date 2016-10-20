@@ -33,6 +33,9 @@ library
                      , bytestring                      == 0.10.*
                      , cryptohash                      == 0.11.*
                      , conduit                         == 1.2.*
+                       -- Temporary workaround for http-client.
+                       -- https://github.com/erikd-ambiata/test-warp-wai/issues/1
+                     , connection                      == 0.2.5
                      , clock                           == 0.5.*
                      , data-default                    == 0.5.*
                      , directory                       == 1.2.*
