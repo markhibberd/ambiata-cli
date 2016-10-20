@@ -1,7 +1,12 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Ambiata.Cli.Data.Api (
-    AmbiataAPIKey (..)
+    AmbiataAPICredential (..)
+  , AmbiataAPIKey (..)
+  , TSRPKey
+  , KeyId
+  , RequestExpiry (..)
+
   , AmbiataAPIEndpoint (..)
   , Organisation (..)
   , ApiError (..)
@@ -17,6 +22,11 @@ import           Network.HTTP.Client (HttpException (..))
 
 import           P
 
+import           Zodiac.HttpClient (TSRPKey, KeyId, RequestExpiry(..))
+
+data AmbiataAPICredential =
+    HashedCredential !AmbiataAPIKey
+  | TSRPCredential !KeyId !TSRPKey !RequestExpiry
 
 newtype AmbiataAPIKey = AmbiataAPIKey {
     unAmbKey :: Text
