@@ -73,7 +73,7 @@ data DownloadError =
 -- |
 -- Upload a single file via the API.
 --
-upload :: A.Region -> AmbiataAPIKey -> AmbiataAPIEndpoint -> FilePath -> EitherT UploadError IO ()
+upload :: A.Region -> AmbiataAPICredential -> AmbiataAPIEndpoint -> FilePath -> EitherT UploadError IO ()
 upload region k a f = do
   creds <- bimapEitherT UploadApiError id . apiCall k a $
     obtainCredentialsForUpload
@@ -94,7 +94,7 @@ upload' privileged target f = do
 -- far less reliable than uploading a file directly, but may be
 -- convenient for small data.
 --
-uploadExec :: A.Region -> AmbiataAPIKey -> AmbiataAPIEndpoint -> FileName -> Program -> Arguments -> BufferSize -> EitherT UploadError IO ()
+uploadExec :: A.Region -> AmbiataAPICredential -> AmbiataAPIEndpoint -> FileName -> Program -> Arguments -> BufferSize -> EitherT UploadError IO ()
 uploadExec region k a n p args b = do
   creds <- bimapEitherT UploadApiError id . apiCall k a $ obtainCredentialsForUpload
   privileged <- authUp region creds
@@ -160,12 +160,12 @@ uploadExec' privileged target p args b = do
           void . withPrivilege . A.send $ abort uploadId
           void . withPrivilege $ S3.writeWithModeOrFail S3.Overwrite target ""
 
-list :: AmbiataAPIKey -> AmbiataAPIEndpoint -> Organisation -> Endpoint -> EitherT ListError IO [ServerFile]
+list :: AmbiataAPICredential -> AmbiataAPIEndpoint -> Organisation -> Endpoint -> EitherT ListError IO [ServerFile]
 list k a o e = do
   fmap downloadPaths . bimapEitherT ListApiError id . apiCall k a $
     obtainCredentialsForDownload o e
 
-download :: A.Region -> AmbiataAPIKey -> AmbiataAPIEndpoint -> Organisation -> Endpoint -> S3.Address -> FilePath -> EitherT DownloadError IO ()
+download :: A.Region -> AmbiataAPICredential -> AmbiataAPIEndpoint -> Organisation -> Endpoint -> S3.Address -> FilePath -> EitherT DownloadError IO ()
 download region k a o e s t = do
   creds <- bimapEitherT DownloadApiError id . apiCall k a $
     obtainCredentialsForDownload o e

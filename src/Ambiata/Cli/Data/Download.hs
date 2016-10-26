@@ -44,7 +44,7 @@ data DownloadAccess =
     } deriving (Eq, Show)
 
 data DownloadEnv =
-  DownloadEnv DownloadDir Organisation Endpoint CommonEnv deriving (Show)
+  DownloadEnv DownloadDir Organisation Endpoint CommonEnv
 
 -- |
 -- Represents a file to be downloaded from the API.

@@ -6,6 +6,7 @@ import           Ambiata.Cli.Data.Download (unServerFile)
 import           Ambiata.Cli.Data.Exec
 import           Ambiata.Cli.Data.Env
 import           Ambiata.Cli.Data.Transfer
+import           Ambiata.Cli.Env (apiCredential)
 import           Ambiata.Cli.Standalone
 
 import           BuildInfo_ambiata_cli
@@ -15,6 +16,8 @@ import           Control.Concurrent (getNumCapabilities, setNumCapabilities)
 import           Data.String (String)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+
+import qualified Env as E
 
 import           GHC.Conc (getNumProcessors)
 
@@ -28,6 +31,7 @@ import           System.IO
 import           System.Environment
 import           System.Exit
 import           X.Options.Applicative
+import           X.Control.Monad.Trans.Either (hoistEither)
 import           X.Control.Monad.Trans.Either.Exit (orDie)
 
 
@@ -76,19 +80,19 @@ parser =
 run :: Command -> IO ()
 run c = case c of
   UploadCommand f -> do
-    k <- AmbiataAPIKey <$> text "AMBIATA_API_KEY"
+    k <- (orDie T.pack . hoistEither) =<< (E.parseOr pure mempty apiCredential)
     r <- textParseOr "AMBIATA_REGION" AmbiataAu parseAmbiataRegion
     a <- AmbiataAPIEndpoint <$> textOr "AMBIATA_API_ENDPOINT" (unAmbEndpoint . defaultAmbiataAPIEndpointFor $ r)
     orDie renderUploadError $
       upload (toAWSRegion r) k a f
   UploadExecCommand b f p args -> do
-    k <- AmbiataAPIKey <$> text "AMBIATA_API_KEY"
+    k <- (orDie T.pack . hoistEither) =<< (E.parseOr pure mempty apiCredential)
     r <- textParseOr "AMBIATA_REGION" AmbiataAu parseAmbiataRegion
     a <- AmbiataAPIEndpoint <$> textOr "AMBIATA_API_ENDPOINT" (unAmbEndpoint . defaultAmbiataAPIEndpointFor $ r)
     orDie renderUploadError $
       uploadExec (toAWSRegion r) k a f p args b
   ListCommand o e -> do
-    k <- AmbiataAPIKey <$> text "AMBIATA_API_KEY"
+    k <- (orDie T.pack . hoistEither) =<< (E.parseOr pure mempty apiCredential)
     r <- textParseOr "AMBIATA_REGION" AmbiataAu parseAmbiataRegion
     a <- AmbiataAPIEndpoint <$> textOr "AMBIATA_API_ENDPOINT" (unAmbEndpoint . defaultAmbiataAPIEndpointFor $ r)
     fs <- orDie renderListError $
@@ -96,7 +100,7 @@ run c = case c of
     forM_ fs $ \f ->
       T.putStrLn . S3.addressToText . unServerFile $ f
   DownloadCommand o e s t -> do
-    k <- AmbiataAPIKey <$> text "AMBIATA_API_KEY"
+    k <- (orDie T.pack . hoistEither) =<< (E.parseOr pure mempty apiCredential)
     r <- textParseOr "AMBIATA_REGION" AmbiataAu parseAmbiataRegion
     a <- AmbiataAPIEndpoint <$> textOr "AMBIATA_API_ENDPOINT" (unAmbEndpoint . defaultAmbiataAPIEndpointFor $ r)
     orDie renderDownloadError $
@@ -166,11 +170,6 @@ bufferP =
     , help "Buffer size of upload chunks, a direct control on memory usage vs chunk performance, defaults to 100MB chunks."
     , value $ 1024 * 1024 * 100
     ]
-
-text :: String -> IO Text
-text e =
-  lookupEnv e >>=
-    maybe (bomb . T.pack $ e <> " is a required environment variable for this command.") (pure . T.pack)
 
 textOr :: String -> Text -> IO Text
 textOr e v =

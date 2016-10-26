@@ -29,12 +29,12 @@ data Verbosity = Verbose | Quiet
 
 data CommonEnv =
   CommonEnv {
-      apiKey      :: AmbiataAPIKey
+      envCredential :: AmbiataAPICredential
     , explicitApiEndpoint :: Maybe AmbiataAPIEndpoint
-    , apiRegion   :: AmbiataRegion
-    , runMode     :: RunMode
-    , verbosity   :: Verbosity
-    } deriving (Show)
+    , apiRegion :: AmbiataRegion
+    , runMode :: RunMode
+    , verbosity :: Verbosity
+    }
 
 
 data AmbiataRegion =

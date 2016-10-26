@@ -88,3 +88,5 @@ instance Arbitrary AmbiataAPICredential where
     TSRPCredential <$> arbitrary <*> arbitrary <*> arbitrary
 
 deriving instance Show AmbiataAPICredential
+
+deriving instance Show CommonEnv

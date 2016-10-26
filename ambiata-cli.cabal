@@ -137,6 +137,7 @@ executable ambiata
                    , ambiata-mismi-s3
                    , ambiata-x-eithert
                    , ambiata-x-optparse
+                   , envparse                        == 0.2.1
                    , optparse-applicative
                    , text
 

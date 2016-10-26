@@ -39,6 +39,9 @@ import           Network.HTTP.Types
 
 import           X.Control.Monad.Trans.Either
 
+import           Zodiac.HttpClient (RequestTimestamp)
+import qualified Zodiac.HttpClient as Z
+
 
 data ApiRequest a =
   ApiRequest {
@@ -48,28 +51,29 @@ data ApiRequest a =
 
 
 apiCall ::
-     AmbiataAPIKey
+     AmbiataAPICredential
   -> AmbiataAPIEndpoint
   -> ApiRequest a
   -> EitherT ApiError IO a
-apiCall key' ep (ApiRequest apiReq resp) = do
+apiCall cred ep (ApiRequest apiReq resp) = do
+  now <- liftIO Z.timestampRequest
   m <- liftIO $ newManager tlsManagerSettings
   req <- liftIO $ setRequestEndpoint ep apiReq
-  (res, _) <- (liftIO . httpGo httpRetryPolicy m $ addRequestHeaders req key') `catch` (\(e :: HttpException) -> left $ NetworkException e)
+  req' <- hoistEither . first CredentialError $ addRequestHeaders now cred req
+  (res, _) <- (liftIO (httpGo httpRetryPolicy m req')) `catch` (\(e :: HttpException) -> left $ NetworkException e)
   hoistEither $ resp res (responseStatus res)
 
 decodeJson :: FromJSON a => Response LBS.ByteString -> Either ApiError a
 decodeJson res =
   first (DecodeError . T.pack) . eitherDecode $ responseBody res
 
-addRequestHeaders :: Request -> AmbiataAPIKey -> Request
-addRequestHeaders req authToken =
-  req {
+addRequestHeaders :: RequestTimestamp -> AmbiataAPICredential -> Request -> Either Z.RequestError Request
+addRequestHeaders now (TSRPCredential kid sk re) req =
+  flip (Z.authedHttpClientRequest kid sk re) now $ req {
       requestHeaders = requestHeaders req <> [
           (hAccept, apiVersion)
-        , tokenHeader authToken
         ]
-  }
+    }
 
 -- FIXUP AmbiataAPIEndpoint should ideally contain 'URI' which would make this a little nicer without errors
 setRequestEndpoint :: AmbiataAPIEndpoint -> Request -> IO Request
