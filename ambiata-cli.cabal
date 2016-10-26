@@ -195,6 +195,7 @@ test-suite test-io
                     , containers                      == 0.5.*
                     , data-default                    == 0.5.*
                     , directory
+                    , envparse                        == 0.2.1
                     , filepath
                     , http-client                     == 0.4.18.*
                     , http-types                      == 0.8.*
