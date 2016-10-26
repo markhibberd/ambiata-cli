@@ -62,7 +62,7 @@ common =
               <*> (var region "AMBIATA_REGION" $ fold <> mempty $
                     [ def AmbiataAu
                     , helpDef (const "au")
-                    , help "Ambiata Region For API Access, one of 'au' or 'us'."
+                    , help "Ambiata region for API access, one of 'au' or 'us'."
                     ])
               <*> (runmode <$> (switch "ONESHOT" (help "Don't run forever.")))
               <*> (debugVerbosity <$> (switch "DEBUG" (help "Turn on verbose logging.")))
