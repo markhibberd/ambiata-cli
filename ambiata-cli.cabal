@@ -162,6 +162,8 @@ test-suite test
                     , ambiata-mismi-s3
                     , ambiata-mismi-s3-test
                     , ambiata-p
+                    , ambiata-zodiac-tsrp
+                    , ambiata-zodiac-tsrp-test
                     , directory
                     , filepath
                     , quickcheck-instances            == 0.3.*
@@ -194,6 +196,8 @@ test-suite test-io
                     , ambiata-p
                     , ambiata-twine
                     , ambiata-x-eithert
+                    , ambiata-zodiac-tsrp
+                    , ambiata-zodiac-tsrp-test
                     , bytestring
                     , containers                      == 0.5.*
                     , data-default                    == 0.5.*

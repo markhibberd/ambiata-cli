@@ -26,6 +26,7 @@ import           Zodiac.HttpClient (TSRPKey, KeyId, RequestExpiry(..))
 
 data AmbiataAPICredential =
     TSRPCredential !KeyId !TSRPKey !RequestExpiry
+  deriving (Eq)
 
 newtype AmbiataAPIKey = AmbiataAPIKey {
     unAmbKey :: Text

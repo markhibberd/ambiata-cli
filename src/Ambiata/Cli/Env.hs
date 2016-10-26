@@ -69,10 +69,6 @@ common =
 
 apiCredential :: Parser AmbiataAPICredential
 apiCredential =
-  tsrpCredential
-
-tsrpCredential :: Parser AmbiataAPICredential
-tsrpCredential =
   TSRPCredential
     <$> var tsrpKeyId "AMBIATA_API_KEY_ID" (help "API key ID.")
     <*> var tsrpKey "AMBIATA_API_KEY_SECRET" (help "API key secret.")
