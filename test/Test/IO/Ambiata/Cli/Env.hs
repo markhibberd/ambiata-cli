@@ -6,6 +6,8 @@ module Test.IO.Ambiata.Cli.Env where
 import           Ambiata.Cli.Data
 import           Ambiata.Cli.Env
 
+import qualified Env as E
+
 import           P
 
 import           Test.QuickCheck
@@ -15,49 +17,44 @@ import           System.Posix.Env
 
 import           Data.Text
 
+import           Disorder.Core (failWith)
 import           Disorder.Core.IO
 import           Disorder.Corpus
 
-import           Control.Monad.IO.Class         (liftIO)
-
 import           Test.Ambiata.Cli.Arbitrary     ()
-import           Test.IO.Ambiata.Cli.Processing     (expectLeft, runOrFail)
-
-import           Snooze.Url
-
-import           X.Control.Monad.Trans.Either
-
 
 prop_load_failure :: Property
-prop_load_failure = testIO . runOrFail $ do
-  liftIO $ unsetEnv "AMBIATA_API_KEY"
-  expectLeft "Should not have loaded environment" environment >> pure True
+prop_load_failure = testIO $ do
+  unsetEnv "AMBIATA_API_KEY"
+  x <- E.parseOr pure mempty common
+  pure $ either (const (True === True)) (\e -> failWith $ "Should not have loaded environment: " <> pack (show e)) x
 
-prop_load_environment :: TestEnv -> Property
-prop_load_environment (TestEnv ep' key' dir' dl') = testIO $ do
+prop_load_common_environment :: TestEnv -> Property
+prop_load_common_environment (TestEnv ep' key' _dir' _dl') = testIO $ do
   _ <- setEnv "AMBIATA_API_ENDPOINT" (unpack ep') True
   _ <- setEnv "AMBIATA_API_KEY" (unpack key') True
-  _ <- setEnv "UPLOAD_DIR" (unpack dir') True
-  _ <- setEnv "DOWNLOAD_DIR" (unpack dl') True
-  Right (Env incoming apikey (AmbiataAPIEndpoint endpoint) dl'') <- runEitherT environment
-  pure $ (incoming, apikey, show $ Just endpoint, dl'') ===
-         (IncomingDir $ unpack dir', AmbiataAPIKey key', show url', DownloadDir dl')
-  where
-    url' = url ep' (pathRaw "")
-
+  x <- E.parseOr pure mempty common
+  pure $ (
+      fmap (fmap unAmbEndpoint . explicitApiEndpoint) x
+    , fmap (unAmbKey . apiKey) x
+    ) === (
+      Right (Just ep')
+    , Right key'
+    )
 
 data TestEnv =
   TestEnv {
-  apiEndpoint :: Text,
-  apiKey      :: Text,
-  uploadDir   :: Text,
-  downloadDir :: Text
+  tapiEndpoint :: Text,
+  tapiKey      :: Text,
+  tuploadDir   :: Text,
+  tdownloadDir :: Text
 } deriving (Show)
 
 instance Arbitrary TestEnv where
-  arbitrary = TestEnv <$> elements (fmap ("https://" <>) muppets)
+  arbitrary = TestEnv <$> elements (fmap ("https://" <>) southpark)
                       <*> elements cooking
                       <*> elements muppets
+                      <*> elements viruses
 
 
 return []

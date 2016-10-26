@@ -8,6 +8,7 @@ module Ambiata.Cli.Env (
   , uploadEnv'
   , downloadEnv
   , downloadEnv'
+  , common
   ) where
 
 import           Ambiata.Cli.Data
