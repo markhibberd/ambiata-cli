@@ -25,9 +25,12 @@ library
                      , ambiata-mismi-core
                      , ambiata-mismi-s3
                      , ambiata-p
+                     , ambiata-tinfoil
                      , ambiata-twine
                      , ambiata-x-eithert
                      , ambiata-x-optparse
+                     , ambiata-zodiac-core
+                     , ambiata-zodiac-http-client
                      , base64-bytestring               == 1.0.*
                      , blaze-builder                   == 0.4.*
                      , bytestring                      == 0.10.*
@@ -159,6 +162,8 @@ test-suite test
                     , ambiata-mismi-s3
                     , ambiata-mismi-s3-test
                     , ambiata-p
+                    , ambiata-zodiac-tsrp
+                    , ambiata-zodiac-tsrp-test
                     , directory
                     , filepath
                     , quickcheck-instances            == 0.3.*
@@ -191,6 +196,8 @@ test-suite test-io
                     , ambiata-p
                     , ambiata-twine
                     , ambiata-x-eithert
+                    , ambiata-zodiac-tsrp
+                    , ambiata-zodiac-tsrp-test
                     , bytestring
                     , containers                      == 0.5.*
                     , data-default                    == 0.5.*

@@ -1,27 +1,27 @@
 {-# LANGUAGE NoImplicitPrelude   #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Test.Ambiata.Cli.Arbitrary where
 
 import           Ambiata.Cli.Data
 
+import           Data.Text
 import           Data.Time.Clock
 import           Data.Time.Clock.POSIX
 
-import           Mismi.S3 (Key (..), combineKey, withKey)
+import           Disorder.Corpus
 
-import           Test.QuickCheck
-import           Test.QuickCheck.Instances ()
+import           Mismi.S3 (Key (..), combineKey, withKey)
 
 import           P
 
-import           Disorder.Corpus
-
 import           Test.Mismi.Arbitrary      ()
 import           Test.Mismi.S3.Arbitrary   ()
-
-import           Data.Text
+import           Test.QuickCheck
+import           Test.QuickCheck.Instances ()
+import           Test.Zodiac.TSRP.Arbitrary ()
 
 posixDays :: Int -> NominalDiffTime
 posixDays = (posixDayLength *) . fromIntegral
@@ -82,3 +82,9 @@ instance Arbitrary ServerFile where
 instance Arbitrary AmbiataRegion where
   arbitrary =
     elements [AmbiataAu, AmbiataUs]
+
+instance Arbitrary AmbiataAPICredential where
+  arbitrary =
+    TSRPCredential <$> arbitrary <*> arbitrary <*> arbitrary
+
+deriving instance Show AmbiataAPICredential

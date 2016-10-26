@@ -6,22 +6,24 @@ module Test.IO.Ambiata.Cli.Env where
 import           Ambiata.Cli.Data
 import           Ambiata.Cli.Env
 
-import qualified Env as E
-
-import           P
-
-import           Test.QuickCheck
-
-import           System.IO
-import           System.Posix.Env
-
+import qualified Data.ByteString.Char8 as BSC
 import           Data.Text
 
 import           Disorder.Core (failWith)
 import           Disorder.Core.IO
 import           Disorder.Corpus
 
-import           Test.Ambiata.Cli.Arbitrary     ()
+import qualified Env as E
+
+import           P
+
+import           System.IO
+import           System.Posix.Env
+
+import           Test.Ambiata.Cli.Arbitrary ()
+import           Test.QuickCheck
+
+import qualified Zodiac.TSRP.Data as Z
 
 prop_load_failure :: Property
 prop_load_failure = testIO $ do
@@ -30,31 +32,87 @@ prop_load_failure = testIO $ do
   pure $ either (const (True === True)) (\e -> failWith $ "Should not have loaded environment: " <> pack (show e)) x
 
 prop_load_common_environment :: TestEnv -> Property
-prop_load_common_environment (TestEnv ep' key' _dir' _dl') = testIO $ do
-  _ <- setEnv "AMBIATA_API_ENDPOINT" (unpack ep') True
-  _ <- setEnv "AMBIATA_API_KEY" (unpack key') True
+prop_load_common_environment te = testIO $ do
+  setTestEnv te
   x <- E.parseOr pure mempty common
   pure $ (
       fmap (fmap unAmbEndpoint . explicitApiEndpoint) x
     , fmap (unAmbKey . apiKey) x
     ) === (
-      Right (Just ep')
-    , Right key'
+      Right (Just $ tapiEndpoint te)
+    , Right $ tapiKey te
     )
+
+prop_load_upload_environment :: TestEnv -> Property
+prop_load_upload_environment te = testIO $ do
+  setTestEnv te
+  x <- E.parseOr pure mempty uploadEnv'
+  pure $ (
+      fmap (\(UploadEnv dir'' _ _) -> pack $ unDir dir'') x
+    , fmap (\(UploadEnv _ rt _) -> renderIntegral $ retentionDays rt) x
+    ) === (
+      Right $ tuploadDir te
+    , Right $ tarchiveRetention te
+    )
+
+prop_load_download_environment :: TestEnv -> Property
+prop_load_download_environment te = testIO $ do
+  setTestEnv te
+  x <- E.parseOr pure mempty downloadEnv'
+  pure $ (
+      fmap (\(DownloadEnv dd _ _ _) -> pack $ unDownloadDir dd) x
+    , fmap (\(DownloadEnv _ org _ _) -> unOrganisation org) x
+    , fmap (\(DownloadEnv _ _ e _) -> unEndpoint e) x
+    ) === (
+      Right $ tdownloadDir te
+    , Right $ torganisationId te
+    , Right $ tendpointId te
+    )
+
+prop_api_credential :: AmbiataAPICredential -> Property
+prop_api_credential c@(TSRPCredential kid sk re) =
+  let
+    kid' = BSC.unpack $ Z.renderKeyId kid
+    sk' = BSC.unpack $ Z.renderTSRPKey sk
+    re' = BSC.unpack $ Z.renderRequestExpiry re
+  in testIO $ do
+  setEnv "AMBIATA_API_KEY_ID" kid' True
+  setEnv "AMBIATA_API_KEY_SECRET" sk' True
+  setEnv "AMBIATA_API_REQUEST_EXPIRY" re' True
+  c' <- E.parse mempty apiCredential
+  pure $ c === c'
+
+setTestEnv :: TestEnv -> IO ()
+setTestEnv (TestEnv ep' key' dir' dl' rt oid eid) =
+  mapM_ (\(k,v) -> setEnv k (unpack v) True) [
+      ("AMBIATA_API_ENDPOINT", ep')
+    , ("AMBIATA_API_KEY", key')
+    , ("UPLOAD_DIR", dir')
+    , ("DOWNLOAD_DIR", dl')
+    , ("ARCHIVE_RETENTION", rt)
+    , ("ORGANISATION_ID", oid)
+    , ("ENDPOINT_ID", eid)
+    ]
 
 data TestEnv =
   TestEnv {
-  tapiEndpoint :: Text,
-  tapiKey      :: Text,
-  tuploadDir   :: Text,
-  tdownloadDir :: Text
-} deriving (Show)
+    tapiEndpoint :: Text
+  , tapiKey :: Text
+  , tuploadDir :: Text
+  , tdownloadDir :: Text
+  , tarchiveRetention :: Text
+  , torganisationId :: Text
+  , tendpointId :: Text
+  } deriving (Show)
 
 instance Arbitrary TestEnv where
   arbitrary = TestEnv <$> elements (fmap ("https://" <>) southpark)
                       <*> elements cooking
                       <*> elements muppets
                       <*> elements viruses
+                      <*> (renderIntegral <$> (choose (0 :: Int, 20)))
+                      <*> elements colours
+                      <*> elements weather
 
 
 return []

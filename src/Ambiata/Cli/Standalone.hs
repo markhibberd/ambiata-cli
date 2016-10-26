@@ -33,7 +33,7 @@ import qualified Data.Conduit as C
 import qualified Data.ByteString as BS
 import qualified Data.Text as T
 import qualified Data.List as L
-import           Data.List.NonEmpty (NonEmpty, nonEmpty)
+import           Data.List.NonEmpty (NonEmpty)
 
 import           P
 
