@@ -1,5 +1,8 @@
 #!/bin/sh -exu
 
+: ${AMBIATA_DOC_MASTER:="s3://ambiata-dispensary-v2/doc/master"}
+
 $(dirname $0)/ci.common
 $(dirname $0)/publish-docs
+$(dirname $0)/publish-docs-dispensary ${AMBIATA_DOC_MASTER}
 $(dirname $0)/publish ${AMBIATA_DOWNLOAD}

@@ -1,4 +1,7 @@
 #!/bin/sh -exu
 
+: ${AMBIATA_DOC_BRANCHES:="s3://ambiata-dispensary-v2/doc/branches"}
+
 $(dirname $0)/ci.common
+$(dirname $0)/publish-docs-dispensary ${AMBIATA_DOC_BRANCHES}
 $(dirname $0)/publish ${AMBIATA_ARTEFACTS_BRANCHES}
