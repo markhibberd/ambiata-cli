@@ -142,6 +142,10 @@ $endif$
   \fancyhead[L]{\includegraphics[height=2cm,width=2cm]{assets/ambiata.png}}
 }
 
+% Current pandocs expect this to be defined in the latex template.
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
 $for(header-includes)$
 $header-includes$
 $endfor$
