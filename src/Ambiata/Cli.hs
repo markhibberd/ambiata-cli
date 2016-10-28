@@ -79,7 +79,7 @@ runAction verb name m lockf act = do
 doDownload ::  DownloadEnv -> EitherT AmbiataError IO DownloadResult
 doDownload (DownloadEnv dir o e c) = do
   creds <- bimapEitherT AmbiataApiError id
-    . apiCall (apiKey c) (apiEndpoint c)
+    . apiCall (envCredential c) (apiEndpoint c)
     $ obtainCredentialsForDownload o e
   downloadReady dir (awsRegion c) creds
 
@@ -88,7 +88,7 @@ doUpload (UploadEnv dir retention c) = do
   -- Connect to the API before doing anything else, so we fail fast in
   -- the case of a configuration error.
   creds <- bimapEitherT AmbiataApiError id
-    . apiCall (apiKey c) (apiEndpoint c)
+    . apiCall (envCredential c) (apiEndpoint c)
     $ obtainCredentialsForUpload
   prepareDir dir
   now   <- liftIO $ getCurrentTime

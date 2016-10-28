@@ -30,7 +30,7 @@ import           Web.Scotty                 as S
 
 import           X.Control.Monad.Trans.Either
 
-prop_upload_creds :: AmbiataAPIKey -> TemporaryAccess -> Property
+prop_upload_creds :: AmbiataAPICredential -> TemporaryAccess -> Property
 prop_upload_creds k ta = testIO $ do
   ta' <- withServer (S.post (regex "/.*") . S.raw . encode . JU.ResponseJsonV1 $ ta) $ \u ->
     runEitherT

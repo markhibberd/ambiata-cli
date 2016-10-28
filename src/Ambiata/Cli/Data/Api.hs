@@ -23,6 +23,7 @@ import           Network.HTTP.Client (HttpException (..))
 import           P
 
 import           Zodiac.HttpClient (TSRPKey, KeyId, RequestExpiry(..))
+import qualified Zodiac.HttpClient as Z
 
 data AmbiataAPICredential =
     TSRPCredential !KeyId !TSRPKey !RequestExpiry
@@ -45,6 +46,7 @@ data ApiError =
     BadResponse Status
   | DecodeError Text
   | NetworkException HttpException
+  | CredentialError Z.RequestError
   deriving Show
 
 
@@ -57,6 +59,8 @@ renderApiError e =
       "Incorrect JSON returned from Ambiata API: " <> t
     NetworkException t ->
       "A network error has occured with the Ambiata API: " <> (T.pack $ show t)
+    CredentialError ce ->
+      "Error signing request: " <> Z.renderRequestError ce
 
 tokenHeader :: AmbiataAPIKey -> Header
 tokenHeader (AmbiataAPIKey k) =

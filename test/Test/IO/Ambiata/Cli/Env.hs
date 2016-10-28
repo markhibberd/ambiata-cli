@@ -8,6 +8,7 @@ import           Ambiata.Cli.Env
 
 import qualified Data.ByteString.Char8 as BSC
 import           Data.Text
+import qualified Data.Text.Encoding as T
 
 import           Disorder.Core (failWith)
 import           Disorder.Core.IO
@@ -37,10 +38,8 @@ prop_load_common_environment te = testIO $ do
   x <- E.parseOr pure mempty common
   pure $ (
       fmap (fmap unAmbEndpoint . explicitApiEndpoint) x
-    , fmap (unAmbKey . apiKey) x
     ) === (
       Right (Just $ tapiEndpoint te)
-    , Right $ tapiKey te
     )
 
 prop_load_upload_environment :: TestEnv -> Property
@@ -83,10 +82,12 @@ prop_api_credential c@(TSRPCredential kid sk re) =
   pure $ c === c'
 
 setTestEnv :: TestEnv -> IO ()
-setTestEnv (TestEnv ep' key' dir' dl' rt oid eid) =
+setTestEnv (TestEnv ep' dir' dl' rt oid eid kid sk re) =
   mapM_ (\(k,v) -> setEnv k (unpack v) True) [
       ("AMBIATA_API_ENDPOINT", ep')
-    , ("AMBIATA_API_KEY", key')
+    , ("AMBIATA_API_KEY_ID", kid)
+    , ("AMBIATA_API_KEY_SECRET", sk)
+    , ("AMBIATA_API_REQUEST_EXPIRY", re)
     , ("UPLOAD_DIR", dir')
     , ("DOWNLOAD_DIR", dl')
     , ("ARCHIVE_RETENTION", rt)
@@ -97,22 +98,26 @@ setTestEnv (TestEnv ep' key' dir' dl' rt oid eid) =
 data TestEnv =
   TestEnv {
     tapiEndpoint :: Text
-  , tapiKey :: Text
   , tuploadDir :: Text
   , tdownloadDir :: Text
   , tarchiveRetention :: Text
   , torganisationId :: Text
   , tendpointId :: Text
+  , tapiKeyId :: Text
+  , tapiKeySecret :: Text
+  , tapiRequestExpiry :: Text
   } deriving (Show)
 
 instance Arbitrary TestEnv where
   arbitrary = TestEnv <$> elements (fmap ("https://" <>) southpark)
-                      <*> elements cooking
                       <*> elements muppets
                       <*> elements viruses
                       <*> (renderIntegral <$> (choose (0 :: Int, 20)))
                       <*> elements colours
                       <*> elements weather
+                      <*> ((T.decodeUtf8 . Z.renderKeyId) <$> arbitrary)
+                      <*> ((T.decodeUtf8 . Z.renderTSRPKey) <$> arbitrary)
+                      <*> (renderIntegral <$> (choose (0 :: Int, maxBound)))
 
 
 return []

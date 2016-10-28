@@ -53,7 +53,7 @@ downloadEnv' =
 
 common :: Parser CommonEnv
 common =
-    CommonEnv <$> var appToken "AMBIATA_API_KEY" (help "Application token for Ambiata API.")
+    CommonEnv <$> apiCredential
               <*> (var endpoint "AMBIATA_API_ENDPOINT" $ fold <> mempty $
                     [ def Nothing
                     , helpDef (const . T.unpack . unAmbEndpoint $ defaultAmbiataAPIEndpoint)
@@ -112,9 +112,6 @@ region = nonempty >=> str >=> (maybeToRight "Invalid specification for AMBIATA_R
 runmode :: Bool -> RunMode
 runmode True = OneShot
 runmode False = Daemon
-
-appToken :: Reader AmbiataAPIKey
-appToken = nonempty >=> (Right . AmbiataAPIKey . T.pack)
 
 debugVerbosity :: Bool -> Verbosity
 debugVerbosity True  = Verbose

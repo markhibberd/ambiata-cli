@@ -14,7 +14,8 @@ Restart=on-failure
 ExecStart=/opt/ambiata/bin/ambiata-daemon upload
 
 # Replace these values with the relevant ones for your organisation.
-Environment="AMBIATA_API_KEY=6a7c5f66-d2d3-4b86-96ed-1770c1abb942"
+Environment="AMBIATA_API_KEY_ID=DWPXY18c57b5cde3dc531dbfa19e781f24605e"
+Environment="AMBIATA_API_KEY_SECRET=LWTGZD89cf43bed574d6e6a54bf436b3a4ba8dc658973b85aa5bfc80f05e38e01d28d7"
 Environment="UPLOAD_DIR=/home/upload/data/"
 
 # Use an HTTP proxy which requires authentication.

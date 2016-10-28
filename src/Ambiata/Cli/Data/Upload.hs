@@ -133,7 +133,7 @@ newtype Retention =
     deriving (Eq, Show, Ord)
 
 data UploadEnv =
-  UploadEnv IncomingDir Retention CommonEnv deriving (Show)
+  UploadEnv IncomingDir Retention CommonEnv
 
 data FileReady =
     Ready
