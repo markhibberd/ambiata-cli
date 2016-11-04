@@ -34,7 +34,7 @@ data CommonEnv =
     , apiRegion :: AmbiataRegion
     , runMode :: RunMode
     , verbosity :: Verbosity
-    }
+    } deriving (Show)
 
 
 data AmbiataRegion =
