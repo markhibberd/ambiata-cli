@@ -1,7 +1,6 @@
 {-# LANGUAGE NoImplicitPrelude   #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Test.Ambiata.Cli.Arbitrary where
 
@@ -86,7 +85,3 @@ instance Arbitrary AmbiataRegion where
 instance Arbitrary AmbiataAPICredential where
   arbitrary =
     TSRPCredential <$> arbitrary <*> arbitrary <*> arbitrary
-
-deriving instance Show AmbiataAPICredential
-
-deriving instance Show CommonEnv
