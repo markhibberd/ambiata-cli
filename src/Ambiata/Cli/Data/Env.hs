@@ -40,6 +40,7 @@ data CommonEnv =
 data AmbiataRegion =
     AmbiataAu
   | AmbiataUs
+  | AmbiataSg
     deriving (Eq, Show)
 
 
@@ -58,6 +59,8 @@ defaultAmbiataAPIEndpointFor r =
       AmbiataAPIEndpoint "https://api.ambiata.com"
     AmbiataUs ->
       AmbiataAPIEndpoint "https://us-api.ambiata.com"
+    AmbiataSg ->
+      AmbiataAPIEndpoint "https://singapore-api.ambiata.com"
 
 renderAmbiataRegion :: AmbiataRegion -> Text
 renderAmbiataRegion r =
@@ -66,6 +69,8 @@ renderAmbiataRegion r =
       "au"
     AmbiataUs ->
       "us"
+    AmbiataSg ->
+      "sg"
 
 parseAmbiataRegion :: Text -> Maybe AmbiataRegion
 parseAmbiataRegion t =
@@ -74,6 +79,8 @@ parseAmbiataRegion t =
       Just AmbiataAu
     "us" ->
       Just AmbiataUs
+    "sg" ->
+      Just AmbiataSg
     _ ->
       Nothing
 
@@ -84,6 +91,8 @@ toAWSRegion r =
       Sydney
     AmbiataUs ->
       NorthVirginia
+    AmbiataSg ->
+      Singapore
 
 awsRegion :: CommonEnv -> Region
 awsRegion c =
