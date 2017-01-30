@@ -20,6 +20,7 @@ module Ambiata.Cli.Downloads (
 import           Ambiata.Cli.Data
 import           Ambiata.Cli.Files
 
+import           Control.Lens (over, set)
 import           Control.Monad.Catch (handle, throwM)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Trans.Class (lift)
@@ -27,7 +28,9 @@ import           Control.Monad.Trans.Class (lift)
 import qualified Data.Text                  as T
 
 import           Mismi
+import           Mismi.Amazonka (serviceRetry, retryAttempts, exponentBase, configure)
 import           Mismi.S3 hiding (DownloadError)
+import           Mismi.S3.Amazonka (s3)
 
 import           P
 
@@ -59,7 +62,9 @@ impacting the behaviour of this program.
 --
 downloadReady :: DownloadDir -> Region -> DownloadAccess -> EitherT AmbiataError IO DownloadResult
 downloadReady dir r (DownloadAccess (TemporaryCreds k s sess) a) = do
-  env <- setDebugging <$> getDebugging <*> newEnvFromCreds r k s (Just sess)
+  env' <- setDebugging <$> getDebugging <*> newEnvFromCreds r k s (Just sess)
+  let
+    env = configure (over serviceRetry (set retryAttempts 10 . set exponentBase 0.6) s3) env'
   runAWST env AmbiataAWSDownloadError
     . bimapEitherT AmbiataDownloadError id . EitherT
     $ downloadFiles dir a
