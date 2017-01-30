@@ -1,5 +1,7 @@
 #!/bin/sh -eu
 
+set -x
+
 OUTFILE="$1"
 
 APPLICATION="ambiata"
@@ -21,8 +23,11 @@ install -m 755 -d $pdfdir
 install -m 755 -d $markdowndir
 install -m 755 -d $exampledir
 
-for e in $EXES
-do
+for x in doc/examples/*; do
+    install -m 755 -d $exampledir/$(basename $x)
+done
+
+for e in $EXES; do
     install -m 755 dist/build/${e}/${e} -t $bindir
 done
 
@@ -42,9 +47,11 @@ find doc \
      -type f \
      -exec install -m 644 {} -t $markdowndir \;
 
-find doc/examples \
-     -maxdepth 1 \
-     -type f \
-     -exec install -m 644 {} -t $exampledir \;
+for x in doc/examples/*; do
+    base=$(basename $x)
+    for y in doc/examples/$base/*; do
+        install -m 755 $y -t $exampledir/$base
+    done
+done
 
 tar -C $tmpdir -c $APPLICATION | gzip > $OUTFILE
