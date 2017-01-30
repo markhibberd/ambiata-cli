@@ -50,7 +50,7 @@ library
                      , http-client                     == 0.4.18.*
                      , http-client-tls                 == 0.2.*
                      , http-types                      == 0.8.*
-                     , lens                            >= 4.8       && < 4.10
+                     , lens                            >= 4.8       && < 4.150
                      , mtl                             == 2.2.*
                      , process                         == 1.2.*
                      , network-uri                     == 2.6.*
@@ -61,6 +61,7 @@ library
                      , time                            >= 1.4        && < 1.7
                      , transformers                    >= 0.3        && < 0.6
                      , unix                            == 2.7.*
+                     , vector                          == 0.11.*
 
 
 
@@ -153,7 +154,7 @@ test-suite test
 
   build-depends:
                       base                            >= 3          && < 5
-                    , QuickCheck                      == 2.7.*
+                    , QuickCheck                      == 2.8.*
                     , ambiata-cli
                     , ambiata-disorder-aeson
                     , ambiata-disorder-core
@@ -185,7 +186,7 @@ test-suite test-io
 
   build-depends:
                       base                            >= 3          && < 5
-                    , QuickCheck                      == 2.7.*
+                    , QuickCheck                      == 2.8.*
                     , aeson
                     , ambiata-cli
                     , ambiata-disorder-core
@@ -232,7 +233,7 @@ test-suite test-cli
 
   build-depends:
                       base                            >= 3          && < 5
-                    , QuickCheck                      == 2.7.*
+                    , QuickCheck                      == 2.8.*
                     , ambiata-cli
                     , ambiata-disorder-aeson
                     , ambiata-disorder-core
