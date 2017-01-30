@@ -28,6 +28,7 @@ import           Ambiata.Cli.Rest
 import           Control.Monad.Catch (bracket_, onException, throwM)
 import           Control.Monad.IO.Class (MonadIO (..))
 import           Control.Lens ((.~), (^.))
+import           Control.Lens (over, set)
 
 import qualified Data.Conduit as C
 import qualified Data.ByteString as BS
@@ -39,10 +40,12 @@ import           P
 
 import           Mismi (runAWS, runAWST, renderError, configureRetries, getDebugging, setDebugging, newEnvFromCreds)
 import           Mismi.Amazonka (Error)
+import           Mismi.Amazonka (serviceRetry, retryAttempts, exponentBase, configure)
 import           Mismi.S3 (Key (..), (//))
 import qualified Mismi.S3 as S3
 import qualified Mismi.S3.Internal as S3 (f')
 import qualified Mismi.S3.Amazonka as A
+import           Mismi.S3.Amazonka (s3)
 
 import           System.IO (IO, FilePath)
 import           System.IO.Error (userError)
@@ -193,13 +196,14 @@ authDown region creds =
 
 auth' :: A.Region -> TemporaryCreds -> EitherT e IO A.Env
 auth' region creds =
-  fmap (configureRetries 10) . setDebugging
-    <$> getDebugging
-    <*> newEnvFromCreds
-      region
-      (tempKey $ creds)
-      (tempSecret  $ creds)
-      (Just . sessionToken $ creds)
+  fmap (configure (over serviceRetry (set retryAttempts 10 . set exponentBase 0.6) s3)) .
+    fmap (configureRetries 10) . setDebugging
+      <$> getDebugging
+      <*> newEnvFromCreds
+        region
+        (tempKey $ creds)
+        (tempSecret  $ creds)
+        (Just . sessionToken $ creds)
 
 convert :: [A.ETag] -> Maybe (NonEmpty A.CompletedPart)
 convert parts =

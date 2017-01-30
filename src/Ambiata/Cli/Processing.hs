@@ -17,13 +17,16 @@ module Ambiata.Cli.Processing (
 
 import           Ambiata.Cli.Data
 
+import           Control.Lens (over, set)
 import           Control.Monad.IO.Class       (liftIO)
 import           Control.Monad.Reader         (local)
 
 import qualified Data.Text                    as T
 
 import           Mismi
+import           Mismi.Amazonka (serviceRetry, retryAttempts, exponentBase, configure)
 import           Mismi.S3
+import           Mismi.S3.Amazonka (s3)
 
 import           P
 
@@ -39,7 +42,9 @@ import           X.Control.Monad.Trans.Either
 --
 uploadReady :: IncomingDir -> Region -> UploadAccess -> EitherT AmbiataError IO [ArchivedFile]
 uploadReady dir r (UploadAccess (TemporaryAccess (TemporaryCreds k s sess) a)) = do
-  env <- setDebugging <$> getDebugging <*> newEnvFromCreds r k s (Just sess)
+  env' <- setDebugging <$> getDebugging <*> newEnvFromCreds r k s (Just sess)
+  let
+    env = configure (over serviceRetry (set retryAttempts 10 . set exponentBase 0.6) s3) env'
   bimapEitherT AmbiataAWSUploadError id $ runAWS env
     . local (configureRetries 10)
     $ processReady dir a
