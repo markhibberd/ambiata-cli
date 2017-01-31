@@ -1,0 +1,5 @@
+#! /bin/sh -eu
+
+exec 1>>/var/tmp/ambiata-daemon.log 2>&1
+
+exec /opt/ambiata/bin/ambiata-daemon $@

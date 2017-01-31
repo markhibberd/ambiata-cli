@@ -1,0 +1,17 @@
+start() {
+    echo -n "Starting ambiatad: "
+
+    # export AMBIATA_REGION=au  # or us, sg, pii-au, pii-us, pii-sg
+    export AMBIATA_API_KEY_ID=DWPXY18c57b5cde3dc531dbfa19e781f24605e
+    export AMBIATA_API_KEY_SECRET=LWTGZD89cf43bed574d6e6a54bf436b3a4ba8dc658973b85aa5bfc80f05e38e01d28d7
+    export DOWNLOAD_DIR="/home/download/data/"
+    export ORGANISATION_ID="12345678"
+    export ENDPOINT_ID="12345678"
+
+    # Use an HTTP proxy which requires authentication.
+    # export https_proxy="http://username:password@proxy.localdomain:3128"
+
+    # This works for older RedHat based systems (including Amazon Linux, for debian based
+    # systems try stop-start-daemon instead of daemon).
+    daemon /usr/local/bin/ambiatad upload &
+}

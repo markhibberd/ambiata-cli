@@ -1,28 +1,31 @@
 # This is an example unitfile for systemd. It can be used on
 # systemd-based Linux distributions like Debian jessie or Centos 7 by
 # updating the configuration variables, copying it to
-# `/etc/systemd/system` and running `systemctl enable ambiata-upload
-# && systemctl start ambiata-upload`.
+# `/etc/systemd/system` and running `systemctl enable ambiata-download
+# && systemctl start ambiata-download`.
 
 [Unit]
-Description=Ambiata Upload
+Description=Ambiata Download
 After=network.target
 
 [Service]
 Type=simple
 Restart=on-failure
-ExecStart=/opt/ambiata/bin/ambiata-daemon upload
+ExecStart=/opt/ambiata/bin/ambiata-daemon download
 
 # Replace these values with the relevant ones for your organisation.
+# Environment="AMBIATA_REGION=au" # or us, sg, pii-au, pii-us, pii-sg
 Environment="AMBIATA_API_KEY_ID=DWPXY18c57b5cde3dc531dbfa19e781f24605e"
 Environment="AMBIATA_API_KEY_SECRET=LWTGZD89cf43bed574d6e6a54bf436b3a4ba8dc658973b85aa5bfc80f05e38e01d28d7"
-Environment="UPLOAD_DIR=/home/upload/data/"
+Environment="DOWNLOAD_DIR=/home/download/data/"
+Environment="ORGANISATION_ID=12345678"
+Environment="ENDPOINT_ID=12345678"
 
 # Use an HTTP proxy which requires authentication.
-Environment="https_proxy=http://username:password@proxy.localdomain:3128"
+# Environment="https_proxy=http://username:password@proxy.localdomain:3128"
 
-# Run as the 'upload' user rather than root.
-User=upload
+# Run as the 'download' user rather than root.
+User=download
 
 [Install]
 WantedBy=multi-user.target
