@@ -21,7 +21,7 @@ Environment="DOWNLOAD_DIR=/home/download/data/"
 Environment="ORGANISATION_ID=12345678"
 Environment="ENDPOINT_ID=12345678"
 
-# Use an HTTP proxy which requires authentication.
+# If required, use an HTTP proxy which requires authentication.
 # Environment="https_proxy=http://username:password@proxy.localdomain:3128"
 
 # Run as the 'download' user rather than root.

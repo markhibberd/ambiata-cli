@@ -12,6 +12,6 @@ start() {
     # export https_proxy="http://username:password@proxy.localdomain:3128"
 
     # This works for older RedHat based systems (including Amazon Linux, for debian based
-    # systems try stop-start-daemon instead of daemon).
-    daemon /usr/local/bin/ambiatad upload &
+    # systems try stop-start-daemon instead of daemon - without the & as it will do the backgrounding it needs).
+    daemon /usr/local/bin/ambiatad download &
 }
