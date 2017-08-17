@@ -32,7 +32,6 @@ for e in $EXES; do
 done
 
 install -m 644 LICENSE -t $distdir
-install -m 644 NOTICE.txt -t $distdir
 install -m 644 doc/README -t $distdir
 
 find doc \
