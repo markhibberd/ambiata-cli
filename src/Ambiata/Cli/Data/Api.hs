@@ -2,7 +2,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Ambiata.Cli.Data.Api (
     AmbiataAPICredential (..)
-  , AmbiataAPIKey (..)
   , TSRPKey
   , KeyId
   , RequestExpiry (..)
@@ -11,13 +10,12 @@ module Ambiata.Cli.Data.Api (
   , Organisation (..)
   , ApiError (..)
   , renderApiError
-  , tokenHeader
   ) where
 
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
-import           Network.HTTP.Types (Header, Status, hAuthorization, statusMessage)
+import           Network.HTTP.Types (Status, statusMessage)
 import           Network.HTTP.Client (HttpException (..))
 
 import           P
@@ -26,12 +24,9 @@ import           Zodiac.HttpClient (TSRPKey, KeyId, RequestExpiry(..))
 import qualified Zodiac.HttpClient as Z
 
 data AmbiataAPICredential =
-    TSRPCredential !KeyId !TSRPKey !RequestExpiry
+    AmbiataAPIKey !Text
+  | TSRPCredential !KeyId !TSRPKey !RequestExpiry
   deriving (Eq, Show)
-
-newtype AmbiataAPIKey = AmbiataAPIKey {
-    unAmbKey :: Text
-  } deriving (Eq, Show)
 
 newtype AmbiataAPIEndpoint = AmbiataAPIEndpoint {
     unAmbEndpoint :: Text
@@ -61,7 +56,3 @@ renderApiError e =
       "A network error has occured with the Ambiata API: " <> (T.pack $ show t)
     CredentialError ce ->
       "Error signing request: " <> Z.renderRequestError ce
-
-tokenHeader :: AmbiataAPIKey -> Header
-tokenHeader (AmbiataAPIKey k) =
-  (hAuthorization, T.encodeUtf8 $ "token " <> k)

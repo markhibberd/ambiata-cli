@@ -8,6 +8,7 @@ import           Ambiata.Cli.Env
 
 import qualified Data.ByteString.Char8 as BSC
 import           Data.Text
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
 import           Disorder.Core (failWith)
@@ -29,6 +30,7 @@ import qualified Zodiac.TSRP.Data as Z
 prop_load_failure :: Property
 prop_load_failure = testIO $ do
   unsetEnv "AMBIATA_API_KEY"
+  unsetEnv "AMBIATA_API_KEY_ID"
   x <- E.parseOr pure mempty common
   pure $ either (const (True === True)) (\e -> failWith $ "Should not have loaded environment: " <> pack (show e)) x
 
@@ -69,12 +71,19 @@ prop_load_download_environment te = testIO $ do
     )
 
 prop_api_credential :: AmbiataAPICredential -> Property
+prop_api_credential c@(AmbiataAPIKey k) =
+  testIO $ do
+    unsetEnv "AMBIATA_API_KEY_ID"
+    setEnv "AMBIATA_API_KEY" (T.unpack k) True
+    c' <- E.parse mempty apiCredential
+    pure $ c === c'
 prop_api_credential c@(TSRPCredential kid sk re) =
   let
     kid' = BSC.unpack $ Z.renderKeyId kid
     sk' = BSC.unpack $ Z.renderTSRPKey sk
     re' = BSC.unpack $ Z.renderRequestExpiry re
   in testIO $ do
+  unsetEnv "AMBIATA_API_KEY"
   setEnv "AMBIATA_API_KEY_ID" kid' True
   setEnv "AMBIATA_API_KEY_SECRET" sk' True
   setEnv "AMBIATA_API_REQUEST_EXPIRY" re' True
