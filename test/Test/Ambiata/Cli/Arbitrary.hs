@@ -63,9 +63,6 @@ instance Arbitrary DownloadAccess where
 instance Arbitrary TemporaryCreds where
   arbitrary = TemporaryCreds <$> arbitrary <*> arbitrary <*> arbitrary
 
-instance Arbitrary AmbiataAPIKey where
-  arbitrary = AmbiataAPIKey <$> elements muppets
-
 instance Arbitrary LocalFile where
   arbitrary =
     LocalFile
@@ -84,4 +81,7 @@ instance Arbitrary AmbiataRegion where
 
 instance Arbitrary AmbiataAPICredential where
   arbitrary =
-    TSRPCredential <$> arbitrary <*> arbitrary <*> arbitrary
+    oneof [
+        AmbiataAPIKey . pack <$> listOf1 (oneof [choose ('a', 'z'), choose ('A', 'Z'), choose ('0', '9')])
+      , TSRPCredential <$> arbitrary <*> arbitrary <*> arbitrary
+      ]

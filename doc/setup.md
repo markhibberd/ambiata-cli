@@ -42,9 +42,8 @@ the server.
 
 ## Required variables
 
- - `AMBIATA_API_KEY_ID` and `AMBIATA_API_KEY_SECRET`. These are tokens
-   used for authentication to Ambiata's API. They are unique and must not
-   be shared.
+ - `AMBIATA_API_KEY`. This is the token used for authentication to Ambiata's
+   API. This is unique and must not be shared.
 
 ## Optional variables
 

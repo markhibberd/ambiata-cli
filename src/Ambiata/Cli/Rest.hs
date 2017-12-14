@@ -27,6 +27,7 @@ import qualified Data.ByteString.Char8      as BS8
 import qualified Data.ByteString.Lazy       as LBS
 import           Data.Default (def)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 
 import           Control.Monad.Catch        (catch)
 import           Control.Monad.IO.Class     (liftIO)
@@ -73,6 +74,11 @@ addRequestHeaders now (TSRPCredential kid sk re) req =
       requestHeaders = requestHeaders req <> [
           (hAccept, apiVersion)
         ]
+    }
+addRequestHeaders _ (AmbiataAPIKey k) req =
+  pure req {
+      requestHeaders =
+        (hAuthorization, T.encodeUtf8 $ "token " <> k) : requestHeaders req
     }
 
 -- FIXUP AmbiataAPIEndpoint should ideally contain 'URI' which would make this a little nicer without errors
